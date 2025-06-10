@@ -2,17 +2,27 @@ package aid.models;
 import javafx.scene.image.Image;
 
 public class User {
-    private String nickName;
+    private String userName;
     private String fullName;
-    private Image profileImage;
+    private String password;
+    private String profileImagePath; // simpan path gambar, bukan objek Image
 
-    public User(String nickName, String fullName, Image profileImage) {
-        this.nickName = nickName;
+    public User(String userName, String fullName, String password) {
+        this.userName = userName;
         this.fullName = fullName;
-        this.profileImage = profileImage;
+        this.password = password;
     }
 
-    public String getNickName() { return nickName; }
+    public User(String userName, String fullName, String password, String profileImagePath) {
+        this.userName = userName;
+        this.fullName = fullName;
+        this.password = password;
+        this.profileImagePath = profileImagePath;
+    }
+
+    public String getUserName() { return userName; }
     public String getFullName() { return fullName; }
-    public Image getProfileImage() { return profileImage; }
+    public String getPassword() { return password; }
+    public String getProfileImagePath() { return profileImagePath; }
+    public void setProfileImagePath(String profileImagePath) { this.profileImagePath = profileImagePath; }
 }

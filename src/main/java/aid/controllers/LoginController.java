@@ -1,6 +1,8 @@
 package aid.controllers;
 import aid.views.LoginView;
 import javafx.stage.Stage;
+import aid.models.User;
+import aid.utils.UserDataUtil;
 
 public class LoginController {
     private final Stage stage;
@@ -19,7 +21,14 @@ public class LoginController {
         });
 
         view.loginBtn.setOnAction(e -> {
-            // validasi trus pindah ke home/utama
+            String nick = view.nickField.getText();
+            String pass = view.passField.getText();
+            User user = UserDataUtil.findUser(nick, pass);
+            if (user != null) {
+                view.toRegisterLabel.setText("Akun telah masuk!"); // Ganti label, bukan popup
+            } else {
+                view.toRegisterLabel.setText("Username/password salah!");
+            }
         });
     }
 

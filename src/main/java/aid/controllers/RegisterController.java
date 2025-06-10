@@ -7,6 +7,7 @@ import javafx.stage.Stage;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import java.io.File;
+import aid.utils.UserDataUtil;
 
 public class RegisterController {
     private final Stage stage;
@@ -44,10 +45,11 @@ public class RegisterController {
             Image finalProfileImage = (profileImage != null) ? profileImage : view.defaultAvatar;
 
             if (!view.nickField.getText().isEmpty() &&
-                !view.fullField.getText().isEmpty() &&
-                !email.isEmpty() &&
-                emailValid) {
-                User user = new User(view.nickField.getText(), view.fullField.getText(), finalProfileImage);
+            !view.fullField.getText().isEmpty() &&
+            !email.isEmpty() &&
+            emailValid) {
+                User user = new User(view.nickField.getText(), view.fullField.getText(), view.passField.getText());
+                UserDataUtil.addUser(user);
                 Alert alert = new Alert(Alert.AlertType.INFORMATION, "Registration successful");
                 alert.showAndWait();
                 LoginController loginController = new LoginController(stage);
