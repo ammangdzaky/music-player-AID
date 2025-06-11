@@ -40,23 +40,16 @@ public class RegisterController {
         });
 
         view.submitBtn.setOnAction(e -> {
-            String email = view.emailField.getText();
-            boolean emailValid = email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$");
             Image finalProfileImage = (profileImage != null) ? profileImage : view.defaultAvatar;
 
             if (!view.nickField.getText().isEmpty() &&
-            !view.fullField.getText().isEmpty() &&
-            !email.isEmpty() &&
-            emailValid) {
+            !view.fullField.getText().isEmpty()) {
                 User user = new User(view.nickField.getText(), view.fullField.getText(), view.passField.getText());
                 UserDataUtil.addUser(user);
                 Alert alert = new Alert(Alert.AlertType.INFORMATION, "Registration successful");
                 alert.showAndWait();
                 LoginController loginController = new LoginController(stage);
                 loginController.show();
-            } else if (!emailValid) {
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Email tidak valid!");
-                alert.showAndWait();
             } else {
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Semua field harus diisi!");
                 alert.showAndWait();

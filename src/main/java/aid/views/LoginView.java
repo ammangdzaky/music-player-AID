@@ -37,7 +37,7 @@ public class LoginView {
 
     public Scene getScene() {
         Scene scene = new Scene(root, 400, 300);
-        scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/styles/LOGstyle.css").toExternalForm());
         return scene;
     }
 }

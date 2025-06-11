@@ -3,25 +3,25 @@ import javafx.scene.image.Image;
 
 public class User {
     private String userName;
-    private String fullName;
+    private String nickName;
     private String password;
     private String profileImagePath; // simpan path gambar, bukan objek Image
 
-    public User(String userName, String fullName, String password) {
+    public User(String userName, String nickName, String password) {
         this.userName = userName;
-        this.fullName = fullName;
+        this.nickName = nickName;
         this.password = password;
     }
 
-    public User(String userName, String fullName, String password, String profileImagePath) {
+    public User(String userName, String nickName, String password, String profileImagePath) {
         this.userName = userName;
-        this.fullName = fullName;
+        this.nickName = nickName;
         this.password = password;
         this.profileImagePath = profileImagePath;
     }
 
     public String getUserName() { return userName; }
-    public String getFullName() { return fullName; }
+    public String getNickName() { return nickName; }
     public String getPassword() { return password; }
     public String getProfileImagePath() { return profileImagePath; }
     public void setProfileImagePath(String profileImagePath) { this.profileImagePath = profileImagePath; }

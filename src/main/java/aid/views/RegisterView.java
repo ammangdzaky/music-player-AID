@@ -11,7 +11,6 @@ import javafx.scene.paint.Color;
 public class RegisterView {
     public TextField nickField = new TextField();
     public TextField fullField = new TextField();
-    public TextField emailField = new TextField();
     public PasswordField passField = new PasswordField();
     public Button uploadBtn = new Button("Upload Profile");
     public Button submitBtn = new Button("Sign up");
@@ -27,8 +26,7 @@ public class RegisterView {
         logo.setPreserveRatio(true);
 
         nickField.setPromptText("Username");
-        fullField.setPromptText("Name");
-        emailField.setPromptText("Email");
+        fullField.setPromptText("Nickname");
         passField.setPromptText("Password");
 
         profileView.setFitWidth(100);
@@ -49,20 +47,20 @@ public class RegisterView {
 
         toLoginLabel.getStyleClass().add("link-label");
 
-        VBox container = new VBox(10, nickField, fullField, emailField, passField, uploadBtn, photoPane, submitBtn, toLoginLabel);
+        VBox container = new VBox(8, photoPane, uploadBtn, nickField, fullField, passField, submitBtn);
         container.setAlignment(Pos.CENTER);
         container.setPadding(new Insets(30));
         container.getStyleClass().add("container");
         container.setMaxWidth(350);
         container.setMaxHeight(350);
 
-        root = new VBox(20, logo, container);
+        root = new VBox(20, logo, container, toLoginLabel);
         root.setAlignment(Pos.CENTER);
     }
 
     public Scene getScene() {
         Scene scene = new Scene(root, 400, 500);
-        scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/styles/LOGstyle.css").toExternalForm());
         return scene;
     }
 }
