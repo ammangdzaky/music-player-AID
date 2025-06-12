@@ -6,9 +6,9 @@ import aid.managers.DataManager;
 
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-import javafx.scene.image.Image;      
-import javafx.scene.image.ImageView;   
-import javafx.scene.control.Label;     
+import javafx.scene.image.Image; 	 	
+import javafx.scene.image.ImageView; 	
+import javafx.scene.control.Label; 	 	
 
 import java.io.File;
 import java.net.URI; 
@@ -18,12 +18,18 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.ArrayList;
 
 public class HomeController {
     private HomeView view;
     private DataManager dataManager;
     private MediaPlayer mediaPlayer;
     private Song currentPlayingSong;
+
+    private boolean isShuffleOn = false;
+    private boolean isRepeatOn = false;
+    private List<Song> shuffledSongs;
 
     public HomeController(HomeView view) {
         this.view = view;
@@ -47,6 +53,8 @@ public class HomeController {
             currentPlayingSong = songs.get(0);
             view.updateCurrentSongInfo(currentPlayingSong);
             initializeMediaPlayer(currentPlayingSong);
+            // Inisialisasi ikon play/pause ke warna kuning saat pertama kali dimuat
+            view.updatePlayPauseButtonIcon(false); 
         } else {
             view.updateCurrentSongInfo(null);
         }
@@ -63,12 +71,10 @@ public class HomeController {
         });
 
         view.getPlayPauseButton().setOnAction(event -> togglePlayPause());
-
-        // --- Tambahkan Event Handler untuk Tombol Previous dan Next ---
         view.getPrevButton().setOnAction(event -> playPreviousSong());
         view.getNextButton().setOnAction(event -> playNextSong());
-        // --- AKHIR TAMBAHAN ---
-
+        view.getShuffleButton().setOnAction(event -> toggleShuffle()); // Hubungkan tombol Shuffle
+        view.getRepeatButton().setOnAction(event -> toggleRepeat());  // Hubungkan tombol Repeat
 
         view.getSearchField().textProperty().addListener((observable, oldValue, newValue) -> {
             filterSongs(newValue);
@@ -93,56 +99,49 @@ public class HomeController {
             String resourcePathInClasspath = "/songs/" + song.getFile(); 
             URL audioUrl = getClass().getResource(resourcePathInClasspath);
 
+            System.out.println("DEBUG: Mencoba memuat dari classpath: " + resourcePathInClasspath);
+            System.out.println("DEBUG: URL yang ditemukan: " + audioUrl);
+
             if (audioUrl == null) {
-                System.err.println("Gagal menemukan file musik di classpath: " + resourcePathInClasspath);
-                File mediaFileFallback = new File("resources/songs/" + song.getFile());
-                if (mediaFileFallback.exists()) {
-                    System.err.println("Namun, file ditemukan melalui jalur sistem file (FALLBACK): " + mediaFileFallback.getAbsolutePath());
-                    Media media = new Media(mediaFileFallback.toURI().toString());
-                    mediaPlayer = new MediaPlayer(media);
-                } else {
-                    System.err.println("File musik juga tidak ditemukan di jalur sistem file: " + mediaFileFallback.getAbsolutePath());
-                    System.err.println("Error: File musik tidak ditemukan untuk " + song.getTitle());
-                    return; 
-                }
-            } else {
-                Media media = new Media(audioUrl.toExternalForm());
-                mediaPlayer = new MediaPlayer(media);
+                System.err.println("ERROR: File musik '" + resourcePathInClasspath + "' tidak ditemukan di classpath. Tidak dapat memutar lagu: " + song.getTitle());
+                return;
             }
 
+            Media media = new Media(audioUrl.toExternalForm());
+            mediaPlayer = new MediaPlayer(media);
+
             mediaPlayer.setOnReady(() -> {
-                System.out.println("Media siap: " + song.getTitle());
+                System.out.println("DEBUG: Media siap untuk diputar: " + song.getTitle());
             });
 
             mediaPlayer.setOnEndOfMedia(() -> {
-                System.out.println("Lagu selesai: " + song.getTitle());
-                // Otomatis putar lagu berikutnya saat lagu selesai
-                playNextSong(); // Panggil playNextSong di sini
+                System.out.println("DEBUG: Lagu selesai: " + song.getTitle());
+                if (isRepeatOn) {
+                    playSong(currentPlayingSong);
+                } else {
+                    playNextSong();
+                }
             });
 
+            // Perbarui ikon play/pause berdasarkan status MediaPlayer
             mediaPlayer.statusProperty().addListener((observable, oldValue, newValue) -> {
-                Label iconLabel;
-                if (newValue == MediaPlayer.Status.PLAYING) {
-                    iconLabel = new Label("⏸");
-                } else {
-                    iconLabel = new Label("▶");
-                }
-                iconLabel.setStyle("-fx-font-size: " + view.getFontSizeLarge() + "; -fx-text-fill: " + view.getBgPrimaryDark() + ";");
-                view.getPlayPauseButton().setGraphic(iconLabel);
+                view.updatePlayPauseButtonIcon(newValue == MediaPlayer.Status.PLAYING);
             });
 
         } catch (Exception e) {
             System.err.println("Error menginisialisasi media player untuk " + song.getTitle() + ": " + e.getMessage());
             e.printStackTrace();
-            System.err.println("Error: Gagal memutar lagu: " + song.getTitle() + " - " + e.getMessage());
         }
     }
 
     public void playSong(Song song) {
         if (song != null) {
+            System.out.println("DEBUG: playSong dipanggil untuk: " + song.getTitle());
             if (mediaPlayer != null && currentPlayingSong != null && currentPlayingSong.getId() == song.getId()) {
+                System.out.println("DEBUG: Lagu yang sama, toggle Play/Pause.");
                 togglePlayPause();
             } else {
+                System.out.println("DEBUG: Lagu baru, inisialisasi dan putar.");
                 currentPlayingSong = song;
                 view.updateCurrentSongInfo(currentPlayingSong);
                 initializeMediaPlayer(song);
@@ -155,6 +154,7 @@ public class HomeController {
 
     public void togglePlayPause() {
         if (mediaPlayer != null) {
+            System.out.println("DEBUG: togglePlayPause dipanggil. Status saat ini: " + mediaPlayer.getStatus());
             if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
                 mediaPlayer.pause();
             } else {
@@ -163,52 +163,94 @@ public class HomeController {
         }
     }
 
-    // --- LOGIKA PLAY PREVIOUS DAN NEXT SONG (BARU) ---
     private void playNextSong() {
-        if (currentPlayingSong == null || view.getSongListView().getItems().isEmpty()) {
-            return; // Tidak ada lagu yang diputar atau daftar kosong
+        List<Song> currentSongsList = isShuffleOn ? shuffledSongs : dataManager.getSongs(); 
+
+        if (currentPlayingSong == null || currentSongsList.isEmpty()) {
+            System.out.println("DEBUG: Tidak ada lagu untuk diputar berikutnya.");
+            return;
         }
 
-        List<Song> currentSongsInView = view.getSongListView().getItems();
         int currentIndex = -1;
-        for (int i = 0; i < currentSongsInView.size(); i++) {
-            if (currentSongsInView.get(i).getId() == currentPlayingSong.getId()) {
+        for (int i = 0; i < currentSongsList.size(); i++) {
+            if (currentSongsList.get(i).getId() == currentPlayingSong.getId()) {
                 currentIndex = i;
                 break;
             }
         }
 
         if (currentIndex != -1) {
-            int nextIndex = (currentIndex + 1) % currentSongsInView.size(); // Kembali ke awal jika sudah di akhir
-            Song nextSong = currentSongsInView.get(nextIndex);
+            int nextIndex = (currentIndex + 1) % currentSongsList.size();
+            Song nextSong = currentSongsList.get(nextIndex);
+            System.out.println("DEBUG: Memutar lagu berikutnya: " + nextSong.getTitle());
             playSong(nextSong);
-            view.getSongListView().getSelectionModel().select(nextSong); // Pilih lagu di ListView
+            view.getSongListView().getSelectionModel().select(nextSong);
+        } else {
+            System.out.println("DEBUG: Lagu saat ini tidak ditemukan di daftar, memutar dari awal atau shuffle.");
+            if (!currentSongsList.isEmpty()) {
+                playSong(currentSongsList.get(0));
+                view.getSongListView().getSelectionModel().select(currentSongsList.get(0));
+            }
         }
     }
 
     private void playPreviousSong() {
-        if (currentPlayingSong == null || view.getSongListView().getItems().isEmpty()) {
-            return; // Tidak ada lagu yang diputar atau daftar kosong
+        List<Song> currentSongsList = isShuffleOn ? shuffledSongs : dataManager.getSongs();
+
+        if (currentPlayingSong == null || currentSongsList.isEmpty()) {
+            System.out.println("DEBUG: Tidak ada lagu untuk diputar sebelumnya.");
+            return;
         }
 
-        List<Song> currentSongsInView = view.getSongListView().getItems();
         int currentIndex = -1;
-        for (int i = 0; i < currentSongsInView.size(); i++) {
-            if (currentSongsInView.get(i).getId() == currentPlayingSong.getId()) {
+        for (int i = 0; i < currentSongsList.size(); i++) {
+            if (currentSongsList.get(i).getId() == currentPlayingSong.getId()) {
                 currentIndex = i;
                 break;
             }
         }
 
         if (currentIndex != -1) {
-            int previousIndex = (currentIndex - 1 + currentSongsInView.size()) % currentSongsInView.size(); // Kembali ke akhir jika sudah di awal
-            Song previousSong = currentSongsInView.get(previousIndex);
+            int previousIndex = (currentIndex - 1 + currentSongsList.size()) % currentSongsList.size();
+            Song previousSong = currentSongsList.get(previousIndex);
+            System.out.println("DEBUG: Memutar lagu sebelumnya: " + previousSong.getTitle());
             playSong(previousSong);
-            view.getSongListView().getSelectionModel().select(previousSong); // Pilih lagu di ListView
+            view.getSongListView().getSelectionModel().select(previousSong);
+        } else {
+            System.out.println("DEBUG: Lagu saat ini tidak ditemukan di daftar, memutar dari awal atau shuffle.");
+            if (!currentSongsList.isEmpty()) {
+                playSong(currentSongsList.get(0));
+                view.getSongListView().getSelectionModel().select(currentSongsList.get(0));
+            }
         }
     }
-    // --- AKHIR LOGIKA PLAY PREVIOUS DAN NEXT SONG ---
 
+    private void toggleShuffle() {
+        isShuffleOn = !isShuffleOn;
+        System.out.println("DEBUG: Shuffle is now: " + (isShuffleOn ? "ON" : "OFF"));
+        // Pesan untuk shuffle dihilangkan
+        
+        if (isShuffleOn) {
+            shuffledSongs = new ArrayList<>(dataManager.getSongs());
+            Collections.shuffle(shuffledSongs);
+            view.displaySongs(shuffledSongs);
+            if (currentPlayingSong != null) {
+                view.getSongListView().getSelectionModel().select(currentPlayingSong);
+            }
+        } else {
+            view.displaySongs(dataManager.getSongs()); 
+            if (currentPlayingSong != null) {
+                view.getSongListView().getSelectionModel().select(currentPlayingSong);
+            }
+        }
+    }
+
+    private void toggleRepeat() {
+        isRepeatOn = !isRepeatOn;
+        System.out.println("DEBUG: Repeat is now: " + (isRepeatOn ? "ON" : "OFF"));
+        view.updateRepeatButtonVisual(isRepeatOn); // Memanggil metode update visual tombol repeat
+        view.showMessage("Mode Ulangi: " + (isRepeatOn ? "AKTIF" : "NONAKTIF"), "info"); // Pesan kustom untuk repeat
+    }
 
     private void filterSongs(String searchText) {
         List<Song> filteredSongs = dataManager.getSongs().stream()
@@ -218,6 +260,9 @@ public class HomeController {
                                  (song.getGenre() != null && song.getGenre().toLowerCase().contains(searchText.toLowerCase())))
                 .collect(Collectors.toList());
         view.displaySongs(filteredSongs);
+        if (!filteredSongs.isEmpty()) {
+            view.getSongListView().getSelectionModel().select(filteredSongs.get(0));
+        }
     }
 
     private void filterSongsByGenre(String genre) {
@@ -225,11 +270,14 @@ public class HomeController {
                 .filter(song -> song.getGenre() != null && song.getGenre().equalsIgnoreCase(genre))
                 .collect(Collectors.toList());
         view.displaySongs(filteredSongs);
+        if (!filteredSongs.isEmpty()) {
+            view.getSongListView().getSelectionModel().select(filteredSongs.get(0));
+        }
     }
 
     public List<Song> getRecommendedSongs() {
         return dataManager.getSongs().stream()
-                   .sorted(Comparator.comparing(Song::getTitle))
-                   .collect(Collectors.toList());
+                .sorted(Comparator.comparing(Song::getTitle))
+                .collect(Collectors.toList());
     }
 }

@@ -1,75 +1,24 @@
 /* src/main/resources/styles/homeStyle.css */
 
-/* --- Warna (Anda bisa juga definisikan di :root dalam global.css) --- */
-/* Contoh variabel CSS (jika Anda putuskan untuk menggunakannya): */
-/* :root {
-    --bg-primary-dark: #000000;
-    --accent-yellow: #FFD700;
-    --bg-card-dark: #1a1a1a;
-    --text-light: #FFFFFF;
-    --text-medium-gray: #AAAAAA;
-    --border-gray: #333333;
-} */
-
-
 /* --- Bagian Header --- */
 .header-pane {
     -fx-background-color: #000000;
-    -fx-padding: 10 20 10 10; /* Padding kiri dikurangi untuk rata kiri */
-    -fx-spacing: 15; /* Spasi antar elemen utama di header */
+    -fx-padding: 10 20 10 10;
+    -fx-spacing: 15;
 }
 
-/* Gaya baru untuk logo gambar */
 .app-logo-image {
     /* ImageView ini akan mendapatkan lebar/tinggi dari kode Java */
-    /* Anda bisa tambahkan efek jika mau, misal: -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 5, 0, 0, 0); */
-    /* Untuk memastikan rata tengah vertikal jika parent HBox, bisa pakai: -fx-alignment: CENTER; */
 }
 
-/* Icon-icon di header */
-.header-icon-button, .exit-button {
-    -fx-background-color: transparent;
-    -fx-padding: 5px;
-    -fx-background-radius: 50%;
-}
-.header-icon-button:hover, .exit-button:hover {
-    -fx-background-color: #333333;
-}
+/* search-field, search-button, dll. (biarkan sama) */
 
-/* ... (Gaya lainnya dari modern_styles.css yang lama tetap ada di sini) ... */
-
-/* search-field, search-button, genre-title, genre-button, content-card,
-   song-thumbnail, song-list-item, song-title, song-artist, song-album,
-   album-art, album-title, album-artist-duration, player-round-button,
-   bottom-player-area, song-progress-bar, time-label, volume-slider, dll. */
-   
-/* search-field */
-.search-field {
-    -fx-background-color: #1a1a1a;
-    -fx-text-fill: #FFFFFF;
-    -fx-prompt-text-fill: #AAAAAA;
-    -fx-border-color: #333333;
-    -fx-border-width: 1px;
-    -fx-background-radius: 5px;
-    -fx-border-radius: 5px;
-    -fx-padding: 5px 10px;
-}
-.search-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: #FFFFFF; /* Teks emoji */
-    -fx-font-size: 18px;
-    -fx-background-radius: 5px;
-    -fx-padding: 5px 8px;
-}
-.search-button:hover {
-    -fx-background-color: #333333;
-}
 
 /* --- Bagian Sidebar --- */
 .sidebar {
     -fx-background-color: #000000;
     -fx-border-color: #FFD700;
-    -fx-border-width: 0 1px 0 0; /* Border kanan */
+    -fx-border-width: 0 1px 0 0;
 }
 
 .genre-title {
@@ -78,28 +27,32 @@
     -fx-text-fill: #FFFFFF;
 }
 
-.genre-button {
-    -fx-background-color: transparent;
+/* Gaya untuk ListView Genre */
+.genre-list {
+    -fx-background-color: #000000;
+    -fx-control-inner-background: #000000;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+.genre-list .list-cell {
+    -fx-background-color: #000000;
     -fx-text-fill: #AAAAAA;
+    -fx-padding: 8 10;
     -fx-font-size: 14px;
-    -fx-alignment: center-left;
-    -fx-background-radius: 10px;
-    -fx-border-radius: 10px;
-    -fx-padding: 5 15;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
 }
-.genre-button:hover {
-    -fx-background-color: #2b2b2b;
-    -fx-text-fill: #FFD700;
-}
-.genre-button-active {
+.genre-list .list-cell:filled:selected,
+.genre-list .list-cell:filled:selected:hover {
     -fx-background-color: #FFD700;
     -fx-text-fill: #000000;
     -fx-font-weight: bold;
+    -fx-background-radius: 5px;
 }
-.genre-button-active:hover {
-    -fx-background-color: #FFD700;
-    -fx-text-fill: #000000;
+.genre-list .list-cell:filled:hover {
+    -fx-background-color: rgba(255, 215, 0, 0.2);
 }
+
 
 /* --- Bagian Konten Utama --- */
 .main-content-area {
@@ -118,36 +71,48 @@
     -fx-text-fill: #FFFFFF;
 }
 
-/* Item Daftar Lagu */
+/* Gaya untuk ListView Lagu */
+.song-list {
+    -fx-background-color: #000000;
+    -fx-control-inner-background: #000000;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+.song-list .list-cell {
+    -fx-background-color: #000000;
+    -fx-text-fill: #FFFFFF;
+    -fx-padding: 10 15;
+    -fx-font-size: 14px;
+}
+.song-list .list-cell:filled:selected,
+.song-list .list-cell:filled:selected:hover {
+    -fx-background-color: #333333;
+}
+.song-list .list-cell:filled:hover {
+    -fx-background-color: #1a1a1a;
+}
+
+.song-title-list {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+}
+.song-artist-duration-list {
+    -fx-text-fill: #AAAAAA;
+    -fx-font-size: 12px;
+}
+.song-album-list {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER_RIGHT;
+}
+
 .song-thumbnail {
     -fx-background-color: #333333;
     -fx-background-radius: 5px;
 }
 .song-thumbnail .label {
     -fx-text-fill: #AAAAAA;
-}
-
-.song-list-item {
-    -fx-background-color: transparent;
-    -fx-background-radius: 5px;
-    -fx-padding: 5px;
-}
-.song-list-item:hover {
-    -fx-background-color: #2b2b2b;
-}
-
-.song-title {
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #FFFFFF;
-}
-.song-artist {
-    -fx-font-size: 12px;
-    -fx-text-fill: #AAAAAA;
-}
-.song-album {
-    -fx-font-size: 14px;
-    -fx-text-fill: #FFFFFF;
 }
 
 /* Detail Album / Gambar */
@@ -168,22 +133,51 @@
     -fx-text-fill: #AAAAAA;
 }
 
+/* Tombol Player Round - Default (saat tidak aktif) */
 .player-round-button {
-    -fx-background-color: #FFD700;
+    -fx-background-color: #000000; /* Warna hitam sebagai background tombol */
     -fx-background-radius: 50%;
     -fx-min-width: 40px;
     -fx-min-height: 40px;
     -fx-max-width: 40px;
     -fx-max-height: 40px;
     -fx-padding: 0;
+    -fx-opacity: 1.0; /* Full opacity by default */
 }
 .player-round-button .label {
-    -fx-text-fill: #000000;
+    -fx-text-fill: #FFD700; /* Ikon kuning secara default untuk semua tombol player */
 }
 .player-round-button:hover {
     -fx-scale-x: 1.1;
     -fx-scale-y: 1.1;
+    -fx-opacity: 1.0; /* Full opacity saat hover */
 }
+
+/* Gaya untuk tombol player saat aktif (player-round-button-active) */
+/* Ini tetap ada jika Anda ingin menggunakannya untuk tombol lain di masa depan.
+   Untuk shuffle, kami tidak akan menambahkan/menghapus kelas ini lagi. */
+.player-round-button-active {
+    -fx-background-color: #FFD700; 
+    -fx-opacity: 1.0; 
+}
+.player-round-button-active .label {
+    -fx-text-fill: #000000;
+}
+/* Pastikan hover tetap berfungsi pada tombol aktif */
+.player-round-button-active:hover {
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+    -fx-opacity: 1.0;
+}
+
+/* Gaya khusus untuk tombol repeat saat aktif */
+.repeat-button-active {
+    /* Background tombol repeat tidak berubah saat aktif, tetap hitam */
+}
+.repeat-button-active .label {
+    -fx-text-fill: #FFFFFF; /* Ikon putih saat repeat aktif */
+}
+
 
 /* --- Bagian Kontrol Pemutar (Bawah) --- */
 .bottom-player-area {
@@ -231,4 +225,24 @@
     -fx-background-color: #333333;
     -fx-background-insets: 0;
     -fx-background-radius: 5px;
+}
+
+/* Gaya untuk pesan notifikasi modern */
+.message-box {
+    -fx-background-color: rgba(255, 215, 0, 0.95); /* Kuning lebih solid */
+    -fx-background-radius: 10px;
+    -fx-padding: 10px 20px; /* Padding yang lebih ringkas */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0, 0, 5);
+    -fx-alignment: CENTER;
+    /* Menggunakan min-width/height agar bisa menyesuaikan konten tapi ada batasan minimum */
+    -fx-min-width: 200px;
+    -fx-min-height: 40px;
+    -fx-max-width: 300px; /* Batasan maksimum agar tidak terlalu lebar */
+    -fx-max-height: 60px; /* Batasan maksimum agar tidak terlalu tinggi */
+}
+
+.message-box .label {
+    -fx-text-fill: #000000; /* Teks hitam */
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
 }

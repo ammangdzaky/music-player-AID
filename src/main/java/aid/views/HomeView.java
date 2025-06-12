@@ -1,5 +1,7 @@
 package aid.views;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -17,15 +19,16 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.StackPane; // Import StackPane
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.scene.input.KeyCode;
+import javafx.util.Duration; // Import Duration
 
-import org.controlsfx.control.Notifications;
+import org.controlsfx.control.Notifications; 
 import animatefx.animation.*;
 
 import aid.models.Song;
@@ -43,13 +46,19 @@ public class HomeView {
     private ImageView albumArtImageView;
     private Button playPauseButton;
     private TextField searchField;
-    // Tambahkan field untuk tombol Previous dan Next
     private Button prevButton;
     private Button nextButton;
+    private Button shuffleButton; 
+    private Button repeatButton;  
+    private Slider volumeSlider; 
+
+    // Komponen untuk pesan notifikasi
+    private VBox messageBox;
+    private Label messageLabel;
 
 
     private static final String BG_PRIMARY_DARK = "#000000";
-    private static final String ACCENT_YELLOW = "#FFD700";
+    private static final String ACCENT_YELLOW = "#FFD700"; // Pastikan ini konsisten dengan CSS
     private static final String BG_CARD_DARK = "#1a1a1a";
     private static final String TEXT_LIGHT = "#FFFFFF";
     private static final String TEXT_MEDIUM_GRAY = "#AAAAAA";
@@ -70,23 +79,37 @@ public class HomeView {
     }
 
     private void initializeUI() {
-        BorderPane root = new BorderPane();
-        root.getStyleClass().add("root-pane");
-        root.setStyle("-fx-border-color: " + BORDER_YELLOW + "; -fx-border-width: 3px; -fx-border-radius: " + BORDER_RADIUS_LG + ";");
+        BorderPane contentPane = new BorderPane(); // Rename root to contentPane
+        contentPane.getStyleClass().add("root-pane");
+        contentPane.setStyle("-fx-border-color: " + BORDER_YELLOW + "; -fx-border-width: 3px; -fx-border-radius: " + BORDER_RADIUS_LG + ";");
 
         HBox header = createHeader();
-        root.setTop(header);
+        contentPane.setTop(header);
 
         VBox sidebar = createSidebar();
-        root.setLeft(sidebar);
+        contentPane.setLeft(sidebar);
 
         HBox mainContentArea = createMainContentArea();
-        root.setCenter(mainContentArea);
+        contentPane.setCenter(mainContentArea);
 
         VBox playerControls = createPlayerControls();
-        root.setBottom(playerControls);
+        contentPane.setBottom(playerControls);
 
-        Scene scene = new Scene(root);
+        // Inisialisasi kotak pesan
+        messageLabel = new Label();
+        messageBox = new VBox(messageLabel);
+        messageBox.getStyleClass().add("message-box");
+        messageBox.setVisible(false); // Sembunyikan secara default
+        messageBox.setManaged(false); // Tidak memengaruhi layout saat disembunyikan
+        messageBox.setAlignment(Pos.CENTER);
+
+
+        // Buat StackPane sebagai root utama scene
+        StackPane root = new StackPane();
+        root.getChildren().addAll(contentPane, messageBox); // Tambahkan contentPane dan messageBox
+        StackPane.setAlignment(messageBox, Pos.TOP_CENTER); // Posisikan messageBox di tengah atas
+
+        Scene scene = new Scene(root); // Gunakan StackPane sebagai root scene
         scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
         scene.getStylesheets().add(getClass().getResource("/styles/homeStyle.css").toExternalForm());
 
@@ -99,7 +122,7 @@ public class HomeView {
         scene.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
                 stage.setFullScreen(false);
-                Notifications.create().title("Full Screen").text("Keluar dari mode Full Screen.").showInformation();
+                showMessage("Keluar dari mode Full Screen.", "info"); // Gunakan showMessage kustom
             }
         });
 
@@ -149,13 +172,8 @@ public class HomeView {
         searchButton.getStyleClass().add("search-button");
 
         Runnable performSearch = () -> {
-            String searchText = searchField.getText().trim();
-            if (!searchText.isEmpty()) {
-                Notifications.create().title("Pencarian").text("Mencari: " + searchText).showWarning();
-                new Shake(searchField).play();
-            } else {
-                Notifications.create().title("Pencarian").text("Kolom pencarian kosong.").showError();
-            }
+            showMessage("Mencari: " + searchField.getText().trim(), "info"); // Gunakan showMessage kustom
+            new Shake(searchField).play();
         };
         searchButton.setOnAction(e -> performSearch.run());
         searchField.setOnAction(e -> performSearch.run());
@@ -170,11 +188,11 @@ public class HomeView {
 
         header.getChildren().clear();
         if (appLogoImageView != null) {
-             header.getChildren().addAll(leftNavIcons, spacerLeft, appLogoImageView, searchArea, exitButton);
+            header.getChildren().addAll(leftNavIcons, spacerLeft, appLogoImageView, searchArea, exitButton);
         } else {
-             header.getChildren().addAll(leftNavIcons, spacerLeft, searchArea, exitButton);
+            header.getChildren().addAll(leftNavIcons, spacerLeft, searchArea, exitButton);
         }
-       
+        
         return header;
     }
 
@@ -334,12 +352,11 @@ public class HomeView {
         playerControls.setAlignment(Pos.CENTER);
         playerControls.setPadding(new Insets(10));
         playerControls.getChildren().addAll(
-            createPlayerRoundButton("🔀"),
-            // Tetapkan tombol Previous dan Next ke field
+            shuffleButton = createPlayerRoundButton("🔀"), // Assign to field
             prevButton = createPlayerRoundButton("⏮️"),
             playPauseButton = createPlayerRoundButton("▶️"),
             nextButton = createPlayerRoundButton("⏭️"),
-            createPlayerRoundButton("🔁")
+            repeatButton = createPlayerRoundButton("🔁") // Assign to field
         );
         column.getChildren().add(playerControls);
 
@@ -347,7 +364,7 @@ public class HomeView {
         volumeControl.setAlignment(Pos.CENTER);
         Label volumeIcon = new Label("🔊");
         volumeIcon.setStyle("-fx-font-size: 20px; -fx-text-fill: " + TEXT_LIGHT + ";");
-        Slider volumeSlider = new Slider(0, 100, 50);
+        volumeSlider = new Slider(0, 100, 50); // <--- Inisialisasi field volumeSlider
         volumeSlider.setPrefWidth(200);
         volumeSlider.getStyleClass().add("volume-slider");
         volumeControl.getChildren().addAll(volumeIcon, volumeSlider);
@@ -358,16 +375,28 @@ public class HomeView {
 
     private Button createPlayerRoundButton(String iconText) {
         Label iconLabel = new Label(iconText);
-        iconLabel.setStyle("-fx-font-size: " + FONT_SIZE_LARGE + "; -fx-text-fill: " + BG_PRIMARY_DARK + ";");
+        // Mengubah warna teks ikon default menjadi kuning (ACCENT_YELLOW)
+        iconLabel.setStyle("-fx-font-size: " + FONT_SIZE_LARGE + "; -fx-text-fill: " + ACCENT_YELLOW + ";");
         Button button = new Button();
         button.setGraphic(iconLabel);
         button.setPrefSize(40, 40);
         button.getStyleClass().add("player-round-button");
-        button.setOnAction(e -> {
-            // Notifications.create().title("Player").text("Tombol " + iconText + " diklik!").showInformation();
-        });
-        return button;
+        return button; // Tidak perlu setOnAction di sini, akan di handle di controller
     }
+
+    // Metode untuk memperbarui ikon Play/Pause
+    public void updatePlayPauseButtonIcon(boolean isPlaying) {
+        Label iconLabel;
+        if (isPlaying) {
+            iconLabel = new Label("⏸");
+        } else {
+            iconLabel = new Label("▶");
+        }
+        // Mengubah ikon play/pause selalu kuning
+        iconLabel.setStyle("-fx-font-size: " + FONT_SIZE_LARGE + "; -fx-text-fill: " + ACCENT_YELLOW + ";");
+        playPauseButton.setGraphic(iconLabel);
+    }
+
 
     private VBox createPlayerControls() {
         VBox playerArea = new VBox(10);
@@ -390,6 +419,7 @@ public class HomeView {
         HBox centerControls = new HBox(20);
         centerControls.setAlignment(Pos.CENTER);
         centerControls.getChildren().addAll(
+            // Tombol-tombol ini juga akan mendapatkan ikon kuning
             createPlayerRoundButton("🔀"),
             createPlayerRoundButton("⏮️"),
             createPlayerRoundButton("▶️"),
@@ -422,13 +452,19 @@ public class HomeView {
     public Button getPlayPauseButton() {
         return playPauseButton;
     }
-    // Tambahkan getter untuk tombol Previous dan Next
     public Button getPrevButton() {
         return prevButton;
     }
 
     public Button getNextButton() {
         return nextButton;
+    }
+    public Button getShuffleButton() {
+        return shuffleButton;
+    }
+
+    public Button getRepeatButton() {
+        return repeatButton;
     }
 
     public void displaySongs(List<Song> songs) {
@@ -462,5 +498,54 @@ public class HomeView {
 
     public String getBgPrimaryDark() {
         return BG_PRIMARY_DARK;
+    }
+
+    // --- Metode untuk mengubah visual tombol Shuffle ---
+    public void updateShuffleButtonVisual(boolean isOn) {
+        // Tidak ada perubahan kelas CSS untuk shuffle, karena ikonnya selalu kuning
+    }
+
+    // --- Metode untuk mengubah visual tombol Repeat ---
+    public void updateRepeatButtonVisual(boolean isOn) {
+        if (isOn) {
+            repeatButton.getStyleClass().add("repeat-button-active");
+        } else {
+            repeatButton.getStyleClass().remove("repeat-button-active");
+        }
+    }
+
+    /**
+     * Menampilkan pesan notifikasi di bagian atas layar.
+     * @param message Teks pesan yang akan ditampilkan.
+     * @param type Tipe pesan (saat ini hanya "info" yang memengaruhi style default).
+     */
+    public void showMessage(String message, String type) {
+        messageLabel.setText(message);
+        // Bisa tambahkan logika untuk berbagai 'type' pesan di sini (misal: warna background berbeda)
+        // For now, we only have one style in CSS for .message-box
+
+        // Pastikan tampil di UI thread
+        Platform.runLater(() -> {
+            messageBox.setVisible(true);
+            messageBox.setManaged(true); // Memengaruhi layout lagi
+
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(300), messageBox);
+            fadeIn.setFromValue(0.0);
+            fadeIn.setToValue(1.0);
+            fadeIn.play();
+
+            PauseTransition delay = new PauseTransition(Duration.seconds(2.5)); // Tampilkan selama 2.5 detik
+            delay.setOnFinished(event -> {
+                FadeTransition fadeOut = new FadeTransition(Duration.millis(300), messageBox);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                fadeOut.setOnFinished(e -> {
+                    messageBox.setVisible(false);
+                    messageBox.setManaged(false); // Sembunyikan lagi
+                });
+                fadeOut.play();
+            });
+            delay.play();
+        });
     }
 }
