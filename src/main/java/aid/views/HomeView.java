@@ -36,7 +36,6 @@ public class HomeView {
 
     private Stage stage;
 
-    // --- Deklarasi Field untuk UI yang Dinamis dan diakses Controller ---
     private ListView<Song> songListView;
     private ListView<String> genreListView;
     private Label currentSongTitleLabel;
@@ -44,10 +43,11 @@ public class HomeView {
     private ImageView albumArtImageView;
     private Button playPauseButton;
     private TextField searchField;
+    // Tambahkan field untuk tombol Previous dan Next
+    private Button prevButton;
+    private Button nextButton;
 
 
-    // --- Konstanta Warna dan Styling ---
-    // Dipertahankan sebagai private static final, tapi ditambahkan getter
     private static final String BG_PRIMARY_DARK = "#000000";
     private static final String ACCENT_YELLOW = "#FFD700";
     private static final String BG_CARD_DARK = "#1a1a1a";
@@ -106,7 +106,6 @@ public class HomeView {
         stage.show();
     }
 
-    // --- Bagian Header (Atas) ---
     private HBox createHeader() {
         HBox header = new HBox(10);
         header.setPadding(new Insets(10, 20, 10, 10));
@@ -131,8 +130,8 @@ public class HomeView {
         ImageView appLogoImageView = null;
         try {
             appLogoImageView = new ImageView(new Image(getClass().getResourceAsStream("/images/logo.jpg")));
-            appLogoImageView.setFitWidth(200); // Coba lebar 200px
-            appLogoImageView.setFitHeight(60); // Coba tinggi 60px
+            appLogoImageView.setFitWidth(200);
+            appLogoImageView.setFitHeight(60);
             appLogoImageView.setPreserveRatio(true);
             appLogoImageView.getStyleClass().add("app-logo-image");
         } catch (Exception e) {
@@ -142,7 +141,7 @@ public class HomeView {
             appLogoImageView = new ImageView();
         }
         
-        searchField = new TextField(); // Inisialisasi searchField
+        searchField = new TextField();
         searchField.setPromptText("Search...");
         searchField.getStyleClass().add("search-field");
 
@@ -264,7 +263,7 @@ public class HomeView {
             { // Inisialisasi awal untuk setiap cell
                 songAlbumArt.setFitWidth(40);
                 songAlbumArt.setFitHeight(40);
-                songAlbumArt.setClip(new Circle(20, 20, 20)); // Membuat lingkaran
+                songAlbumArt.setClip(new Circle(20, 20, 20));
 
                 titleLabel.getStyleClass().add("song-title-list");
                 artistDurationLabel.getStyleClass().add("song-artist-duration-list");
@@ -336,9 +335,10 @@ public class HomeView {
         playerControls.setPadding(new Insets(10));
         playerControls.getChildren().addAll(
             createPlayerRoundButton("🔀"),
-            createPlayerRoundButton("⏮️"),
-            playPauseButton = createPlayerRoundButton("▶️"), // Assign to field
-            createPlayerRoundButton("⏭️"),
+            // Tetapkan tombol Previous dan Next ke field
+            prevButton = createPlayerRoundButton("⏮️"),
+            playPauseButton = createPlayerRoundButton("▶️"),
+            nextButton = createPlayerRoundButton("⏭️"),
             createPlayerRoundButton("🔁")
         );
         column.getChildren().add(playerControls);
@@ -364,8 +364,7 @@ public class HomeView {
         button.setPrefSize(40, 40);
         button.getStyleClass().add("player-round-button");
         button.setOnAction(e -> {
-            new Pulse(button).play();
-            Notifications.create().title("Player").text("Tombol " + iconText + " diklik!").showInformation();
+            // Notifications.create().title("Player").text("Tombol " + iconText + " diklik!").showInformation();
         });
         return button;
     }
@@ -423,6 +422,14 @@ public class HomeView {
     public Button getPlayPauseButton() {
         return playPauseButton;
     }
+    // Tambahkan getter untuk tombol Previous dan Next
+    public Button getPrevButton() {
+        return prevButton;
+    }
+
+    public Button getNextButton() {
+        return nextButton;
+    }
 
     public void displaySongs(List<Song> songs) {
         songListView.getItems().setAll(songs);
@@ -437,8 +444,6 @@ public class HomeView {
             currentSongTitleLabel.setText(song.getTitle());
             currentSongArtistLabel.setText(song.getArtist());
             try {
-                // Pastikan path ke cover art benar: /images/namafile.jpg
-                // Default album art sudah ada di HomeView, jadi ini untuk cover spesifik lagu
                 albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/" + song.getCover())));
             } catch (Exception e) {
                 System.err.println("Error loading album art for " + song.getTitle() + ": " + e.getMessage());
@@ -451,7 +456,6 @@ public class HomeView {
         }
     }
 
-    // --- Getter Tambahan untuk Konstanta (untuk HomeController) ---
     public String getFontSizeLarge() {
         return FONT_SIZE_LARGE;
     }

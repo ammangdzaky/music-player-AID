@@ -64,6 +64,12 @@ public class HomeController {
 
         view.getPlayPauseButton().setOnAction(event -> togglePlayPause());
 
+        // --- Tambahkan Event Handler untuk Tombol Previous dan Next ---
+        view.getPrevButton().setOnAction(event -> playPreviousSong());
+        view.getNextButton().setOnAction(event -> playNextSong());
+        // --- AKHIR TAMBAHAN ---
+
+
         view.getSearchField().textProperty().addListener((observable, oldValue, newValue) -> {
             filterSongs(newValue);
         });
@@ -96,9 +102,8 @@ public class HomeController {
                     mediaPlayer = new MediaPlayer(media);
                 } else {
                     System.err.println("File musik juga tidak ditemukan di jalur sistem file: " + mediaFileFallback.getAbsolutePath());
-                    // Notifications.create().title("Error Musik").text("File musik tidak ditemukan untuk: " + song.getTitle()).showError(); // Dihapus
-                    System.err.println("Error: File musik tidak ditemukan untuk " + song.getTitle()); // Ganti dengan System.err
-                    return;
+                    System.err.println("Error: File musik tidak ditemukan untuk " + song.getTitle());
+                    return; 
                 }
             } else {
                 Media media = new Media(audioUrl.toExternalForm());
@@ -111,7 +116,8 @@ public class HomeController {
 
             mediaPlayer.setOnEndOfMedia(() -> {
                 System.out.println("Lagu selesai: " + song.getTitle());
-                mediaPlayer.stop();
+                // Otomatis putar lagu berikutnya saat lagu selesai
+                playNextSong(); // Panggil playNextSong di sini
             });
 
             mediaPlayer.statusProperty().addListener((observable, oldValue, newValue) -> {
@@ -128,8 +134,7 @@ public class HomeController {
         } catch (Exception e) {
             System.err.println("Error menginisialisasi media player untuk " + song.getTitle() + ": " + e.getMessage());
             e.printStackTrace();
-            // Notifications.create().title("Error Musik").text("Gagal memutar lagu: " + song.getTitle() + "\n" + e.getMessage()).showError(); // Dihapus
-            System.err.println("Error: Gagal memutar lagu: " + song.getTitle() + " - " + e.getMessage()); // Ganti dengan System.err
+            System.err.println("Error: Gagal memutar lagu: " + song.getTitle() + " - " + e.getMessage());
         }
     }
 
@@ -157,6 +162,53 @@ public class HomeController {
             }
         }
     }
+
+    // --- LOGIKA PLAY PREVIOUS DAN NEXT SONG (BARU) ---
+    private void playNextSong() {
+        if (currentPlayingSong == null || view.getSongListView().getItems().isEmpty()) {
+            return; // Tidak ada lagu yang diputar atau daftar kosong
+        }
+
+        List<Song> currentSongsInView = view.getSongListView().getItems();
+        int currentIndex = -1;
+        for (int i = 0; i < currentSongsInView.size(); i++) {
+            if (currentSongsInView.get(i).getId() == currentPlayingSong.getId()) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        if (currentIndex != -1) {
+            int nextIndex = (currentIndex + 1) % currentSongsInView.size(); // Kembali ke awal jika sudah di akhir
+            Song nextSong = currentSongsInView.get(nextIndex);
+            playSong(nextSong);
+            view.getSongListView().getSelectionModel().select(nextSong); // Pilih lagu di ListView
+        }
+    }
+
+    private void playPreviousSong() {
+        if (currentPlayingSong == null || view.getSongListView().getItems().isEmpty()) {
+            return; // Tidak ada lagu yang diputar atau daftar kosong
+        }
+
+        List<Song> currentSongsInView = view.getSongListView().getItems();
+        int currentIndex = -1;
+        for (int i = 0; i < currentSongsInView.size(); i++) {
+            if (currentSongsInView.get(i).getId() == currentPlayingSong.getId()) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        if (currentIndex != -1) {
+            int previousIndex = (currentIndex - 1 + currentSongsInView.size()) % currentSongsInView.size(); // Kembali ke akhir jika sudah di awal
+            Song previousSong = currentSongsInView.get(previousIndex);
+            playSong(previousSong);
+            view.getSongListView().getSelectionModel().select(previousSong); // Pilih lagu di ListView
+        }
+    }
+    // --- AKHIR LOGIKA PLAY PREVIOUS DAN NEXT SONG ---
+
 
     private void filterSongs(String searchText) {
         List<Song> filteredSongs = dataManager.getSongs().stream()
