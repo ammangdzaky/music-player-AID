@@ -19,16 +19,16 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane; 
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.scene.input.KeyCode;
-import javafx.util.Duration; 
+import javafx.util.Duration;
 
-import org.controlsfx.control.Notifications; 
+import org.controlsfx.control.Notifications;
 import animatefx.animation.*;
 
 import aid.models.Song;
@@ -48,9 +48,9 @@ public class HomeView {
     private TextField searchField;
     private Button prevButton;
     private Button nextButton;
-    private Button shuffleButton; 
-    private Button repeatButton;  
-    private Slider volumeSlider; 
+    private Button shuffleButton;
+    private Button repeatButton;
+    private Slider volumeSlider;
 
     // Komponen untuk pesan notifikasi
     private VBox messageBox;
@@ -61,16 +61,23 @@ public class HomeView {
     private Label currentTimeLabel;
     private Label totalTimeLabel;
 
-    // Komponen baru untuk mini "Now Playing" display
-    private Label nowPlayingMiniLabel; // Deklarasi label
-    private HBox nowPlayingContainer; // Deklarasi kontainer
+    // Komponen untuk tombol kecepatan (diperbarui untuk 8 tombol)
+    private Button speed025xButton; // Baru
+    private Button speed05xButton;
+    private Button speed075xButton; // Baru
+    private Button speed1xButton;
+    private Button speed125xButton; // Baru
+    private Button speed15xButton;
+    private Button speed175xButton; // Baru
+    private Button speed2xButton;
+
 
     // Callback untuk controller (akan diatur oleh HomeController)
     private SeekCallback seekCallback;
 
 
     private static final String BG_PRIMARY_DARK = "#000000";
-    private static final String ACCENT_YELLOW = "#FFD700"; 
+    private static final String ACCENT_YELLOW = "#FFD700";
     private static final String BG_CARD_DARK = "#1a1a1a";
     private static final String TEXT_LIGHT = "#FFFFFF";
     private static final String TEXT_MEDIUM_GRAY = "#AAAAAA";
@@ -84,6 +91,7 @@ public class HomeView {
     private static final String BORDER_RADIUS_SM = "5px";
     private static final String BORDER_RADIUS_MD = "10px";
     private static final String BORDER_RADIUS_LG = "15px";
+
 
     public HomeView(Stage stage) {
         this.stage = stage;
@@ -100,7 +108,7 @@ public class HomeView {
     }
 
     private void initializeUI() {
-        BorderPane contentPane = new BorderPane(); 
+        BorderPane contentPane = new BorderPane();
         contentPane.getStyleClass().add("root-pane");
         contentPane.setStyle("-fx-border-color: " + BORDER_YELLOW + "; -fx-border-width: 3px; -fx-border-radius: " + BORDER_RADIUS_LG + ";");
 
@@ -120,32 +128,31 @@ public class HomeView {
         messageLabel = new Label();
         messageBox = new VBox(messageLabel);
         messageBox.getStyleClass().add("message-box");
-        messageBox.setVisible(false); 
-        messageBox.setManaged(false); 
+        messageBox.setVisible(false);
+        messageBox.setManaged(false);
         messageBox.setAlignment(Pos.CENTER);
 
 
         // Buat StackPane sebagai root utama scene
         StackPane root = new StackPane();
-        root.getChildren().addAll(contentPane, messageBox); 
-        StackPane.setAlignment(messageBox, Pos.TOP_CENTER); 
-        // Mengatur margin agar messageBox tidak menempel di atas
-        StackPane.setMargin(messageBox, new Insets(20, 0, 0, 0)); 
+        root.getChildren().addAll(contentPane, messageBox);
+        StackPane.setAlignment(messageBox, Pos.TOP_CENTER);
+        StackPane.setMargin(messageBox, new Insets(20, 0, 0, 0));
 
-        Scene scene = new Scene(root); 
+        Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
         scene.getStylesheets().add(getClass().getResource("/styles/homeStyle.css").toExternalForm());
 
         stage.setTitle("AID Music Player - Home");
         stage.setScene(scene);
-        
-        stage.setFullScreen(true); 
-        stage.setFullScreenExitHint(""); 
+
+        stage.setFullScreen(true);
+        stage.setFullScreenExitHint("");
 
         scene.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
                 stage.setFullScreen(false);
-                showMessage("Keluar dari mode Full Screen.", "info"); 
+                showMessage("Keluar dari mode Full Screen.", "info");
             }
         });
 
@@ -161,8 +168,8 @@ public class HomeView {
         HBox leftNavIcons = new HBox(10);
         leftNavIcons.setAlignment(Pos.CENTER_LEFT);
         leftNavIcons.getChildren().addAll(
-            createIconButton("🏠", FONT_SIZE_XLARGE, TEXT_LIGHT), 
-            createIconButton("👤", FONT_SIZE_XLARGE, TEXT_LIGHT)  
+            createIconButton("🏠", FONT_SIZE_XLARGE, TEXT_LIGHT),
+            createIconButton("👤", FONT_SIZE_XLARGE, TEXT_LIGHT)
         );
         leftNavIcons.getChildren().forEach(node -> {
             if (node instanceof Button) {
@@ -186,7 +193,7 @@ public class HomeView {
             logoFallback.setStyle("-fx-font-family: 'Arial Black', sans-serif; -fx-font-size: 20px; -fx-text-fill: #FFD700;");
             appLogoImageView = new ImageView();
         }
-        
+
         searchField = new TextField();
         searchField.setPromptText("Search...");
         searchField.getStyleClass().add("search-field");
@@ -195,7 +202,7 @@ public class HomeView {
         searchButton.getStyleClass().add("search-button");
 
         Runnable performSearch = () -> {
-            showMessage("Mencari: " + searchField.getText().trim(), "info"); 
+            showMessage("Mencari: " + searchField.getText().trim(), "info");
             new Shake(searchField).play();
         };
         searchButton.setOnAction(e -> performSearch.run());
@@ -215,7 +222,7 @@ public class HomeView {
         } else {
             header.getChildren().addAll(leftNavIcons, spacerLeft, searchArea, exitButton);
         }
-        
+
         return header;
     }
 
@@ -254,7 +261,7 @@ public class HomeView {
         button.setPrefHeight(35);
         button.setAlignment(Pos.CENTER_LEFT);
         button.getStyleClass().add("genre-button");
-        
+
         if (text.equals("POP")) {
             button.getStyleClass().add("genre-button-active");
             new Tada(button).play();
@@ -288,7 +295,7 @@ public class HomeView {
         header.getChildren().add(title);
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(0, 0, 10, 0));
-        
+
         column.getChildren().add(header);
 
         songListView = new ListView<>();
@@ -313,11 +320,11 @@ public class HomeView {
                 albumLabel.setWrapText(true);
 
                 textInfo.getChildren().addAll(titleLabel, artistDurationLabel);
-                
+
                 cellLayout.setAlignment(Pos.CENTER_LEFT);
                 cellLayout.setPadding(new Insets(5, 0, 5, 0));
                 HBox.setHgrow(textInfo, Priority.ALWAYS);
-                
+
                 cellLayout.getChildren().addAll(songAlbumArt, textInfo, albumLabel);
             }
 
@@ -329,7 +336,6 @@ public class HomeView {
                     setGraphic(null);
                 } else {
                     titleLabel.setText(song.getTitle());
-                    // Memanggil formatDuration yang sekarang ada di HomeView
                     artistDurationLabel.setText(song.getArtist() + " • " + formatDuration(song.getDurationSeconds()));
                     albumLabel.setText(song.getAlbum());
 
@@ -376,11 +382,11 @@ public class HomeView {
         playerControls.setAlignment(Pos.CENTER);
         playerControls.setPadding(new Insets(10));
         playerControls.getChildren().addAll(
-            shuffleButton = createPlayerRoundButton("🔀"), 
+            shuffleButton = createPlayerRoundButton("🔀"),
             prevButton = createPlayerRoundButton("⏮️"),
             playPauseButton = createPlayerRoundButton("▶️"),
             nextButton = createPlayerRoundButton("⏭️"),
-            repeatButton = createPlayerRoundButton("🔁") 
+            repeatButton = createPlayerRoundButton("🔁")
         );
         column.getChildren().add(playerControls);
 
@@ -388,7 +394,7 @@ public class HomeView {
         volumeControl.setAlignment(Pos.CENTER);
         Label volumeIcon = new Label("🔊");
         volumeIcon.setStyle("-fx-font-size: 20px; -fx-text-fill: " + TEXT_LIGHT + ";");
-        volumeSlider = new Slider(0, 100, 50); 
+        volumeSlider = new Slider(0, 100, 50);
         volumeSlider.setPrefWidth(200);
         volumeSlider.getStyleClass().add("volume-slider");
         volumeControl.getChildren().addAll(volumeIcon, volumeSlider);
@@ -404,7 +410,7 @@ public class HomeView {
         button.setGraphic(iconLabel);
         button.setPrefSize(40, 40);
         button.getStyleClass().add("player-round-button");
-        return button; 
+        return button;
     }
 
     // Metode untuk memperbarui ikon Play/Pause
@@ -425,10 +431,10 @@ public class HomeView {
         playerArea.setPadding(new Insets(10, 20, 10, 20));
         playerArea.getStyleClass().add("bottom-player-area");
 
-        songProgressBar = new ProgressBar(0.0); 
-        songProgressBar.setMaxWidth(Double.MAX_VALUE); 
+        songProgressBar = new ProgressBar(0.0);
+        songProgressBar.setMaxWidth(Double.MAX_VALUE);
         songProgressBar.getStyleClass().add("song-progress-bar");
-        
+
         songProgressBar.setOnMousePressed(e -> {
             if (seekCallback != null) {
                 double progress = e.getX() / songProgressBar.getWidth();
@@ -445,27 +451,79 @@ public class HomeView {
         });
 
         HBox timeLabels = new HBox();
-        currentTimeLabel = new Label("0:00"); 
+        currentTimeLabel = new Label("0:00");
         currentTimeLabel.getStyleClass().add("time-label");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        totalTimeLabel = new Label("0:00"); 
+        totalTimeLabel = new Label("0:00");
         totalTimeLabel.getStyleClass().add("time-label");
         timeLabels.getChildren().addAll(currentTimeLabel, spacer, totalTimeLabel);
 
-        // Mengganti tombol duplikat dengan kontainer untuk "Now Playing" mini display
-        nowPlayingMiniLabel = new Label("Tidak ada lagu diputar");
-        nowPlayingContainer = new HBox();
-        nowPlayingContainer.getStyleClass().add("now-playing-mini-display"); // Terapkan style class baru
-        nowPlayingContainer.setAlignment(Pos.CENTER);
-        nowPlayingContainer.getChildren().add(nowPlayingMiniLabel);
-        HBox.setHgrow(nowPlayingContainer, Priority.ALWAYS); 
-        // Menambahkan margin atas ke nowPlayingContainer untuk menaikkannya
-        // Ini akan menciptakan jarak antara progress bar dan teks
-        nowPlayingContainer.setPadding(new Insets(10, 0, 0, 0)); 
+        // Mengganti "Now Playing" mini display dengan tombol kecepatan
+        HBox speedControlsContainer = new HBox(5); // Spasi antar tombol lebih kecil agar muat 8 tombol
+        speedControlsContainer.setAlignment(Pos.CENTER);
+        
+        // Inisialisasi semua 8 tombol kecepatan
+        speed025xButton = createSpeedButton("0.25x");
+        speed05xButton = createSpeedButton("0.5x");
+        speed075xButton = createSpeedButton("0.75x");
+        speed1xButton = createSpeedButton("1x");
+        speed125xButton = createSpeedButton("1.25x");
+        speed15xButton = createSpeedButton("1.5x");
+        speed175xButton = createSpeedButton("1.75x");
+        speed2xButton = createSpeedButton("2x");
 
-        playerArea.getChildren().addAll(songProgressBar, timeLabels, nowPlayingContainer); 
+        speedControlsContainer.getChildren().addAll(
+            speed025xButton, speed05xButton, speed075xButton, speed1xButton,
+            speed125xButton, speed15xButton, speed175xButton, speed2xButton
+        );
+        HBox.setHgrow(speedControlsContainer, Priority.ALWAYS);
+        // Mengatur margin atas untuk container tombol kecepatan
+        VBox.setMargin(speedControlsContainer, new Insets(10, 0, 0, 0)); // Padding atas 10px
+
+        playerArea.getChildren().addAll(songProgressBar, timeLabels, speedControlsContainer);
         return playerArea;
+    }
+
+    // Metode helper untuk membuat tombol kecepatan
+    private Button createSpeedButton(String text) {
+        Button button = new Button(text);
+        button.getStyleClass().add("speed-button");
+        return button;
+    }
+
+    // Metode untuk memperbarui visual tombol kecepatan yang aktif
+    public void updateSpeedButtonVisual(double activeRate) {
+        Platform.runLater(() -> {
+            // Hapus kelas aktif dari semua tombol
+            speed025xButton.getStyleClass().remove("speed-button-active");
+            speed05xButton.getStyleClass().remove("speed-button-active");
+            speed075xButton.getStyleClass().remove("speed-button-active");
+            speed1xButton.getStyleClass().remove("speed-button-active");
+            speed125xButton.getStyleClass().remove("speed-button-active");
+            speed15xButton.getStyleClass().remove("speed-button-active");
+            speed175xButton.getStyleClass().remove("speed-button-active");
+            speed2xButton.getStyleClass().remove("speed-button-active");
+
+            // Tambahkan kelas aktif ke tombol yang sesuai
+            if (activeRate == 0.25) {
+                speed025xButton.getStyleClass().add("speed-button-active");
+            } else if (activeRate == 0.5) {
+                speed05xButton.getStyleClass().add("speed-button-active");
+            } else if (activeRate == 0.75) {
+                speed075xButton.getStyleClass().add("speed-button-active");
+            } else if (activeRate == 1.0) {
+                speed1xButton.getStyleClass().add("speed-button-active");
+            } else if (activeRate == 1.25) {
+                speed125xButton.getStyleClass().add("speed-button-active");
+            } else if (activeRate == 1.5) {
+                speed15xButton.getStyleClass().add("speed-button-active");
+            } else if (activeRate == 1.75) {
+                speed175xButton.getStyleClass().add("speed-button-active");
+            } else if (activeRate == 2.0) {
+                speed2xButton.getStyleClass().add("speed-button-active");
+            }
+        });
     }
 
     // Metode untuk memperbarui progress bar
@@ -525,6 +583,17 @@ public class HomeView {
         return volumeSlider;
     }
 
+    // Menambahkan getter untuk tombol kecepatan
+    public Button getSpeed025xButton() { return speed025xButton; }
+    public Button getSpeed05xButton() { return speed05xButton; }
+    public Button getSpeed075xButton() { return speed075xButton; }
+    public Button getSpeed1xButton() { return speed1xButton; }
+    public Button getSpeed125xButton() { return speed125xButton; }
+    public Button getSpeed15xButton() { return speed15xButton; }
+    public Button getSpeed175xButton() { return speed175xButton; }
+    public Button getSpeed2xButton() { return speed2xButton; }
+
+
     public void displaySongs(List<Song> songs) {
         songListView.getItems().setAll(songs);
     }
@@ -533,14 +602,12 @@ public class HomeView {
         genreListView.getItems().setAll(genres);
     }
 
+    // Metode updateCurrentSongInfo tidak lagi mengupdate nowPlayingMiniLabel
     public void updateCurrentSongInfo(Song song) {
         if (song != null) {
             currentSongTitleLabel.setText(song.getTitle());
             currentSongArtistLabel.setText(song.getArtist());
-            // Memperbarui label "Now Playing" mini
-            Platform.runLater(() -> {
-                nowPlayingMiniLabel.setText(song.getTitle() + " - " + song.getArtist());
-            });
+            // Logika nowPlayingMiniLabel dihapus
             try {
                 albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/" + song.getCover())));
             } catch (Exception e) {
@@ -550,9 +617,7 @@ public class HomeView {
         } else {
             currentSongTitleLabel.setText("No Song Playing");
             currentSongArtistLabel.setText("");
-            Platform.runLater(() -> {
-                nowPlayingMiniLabel.setText("Tidak ada lagu diputar");
-            });
+            // Logika nowPlayingMiniLabel dihapus
             albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
         }
     }
@@ -589,21 +654,21 @@ public class HomeView {
 
         Platform.runLater(() -> {
             messageBox.setVisible(true);
-            messageBox.setManaged(true); 
+            messageBox.setManaged(true);
 
             FadeTransition fadeIn = new FadeTransition(Duration.millis(300), messageBox);
             fadeIn.setFromValue(0.0);
             fadeIn.setToValue(1.0);
             fadeIn.play();
 
-            PauseTransition delay = new PauseTransition(Duration.seconds(2.0)); 
+            PauseTransition delay = new PauseTransition(Duration.seconds(2.0));
             delay.setOnFinished(event -> {
                 FadeTransition fadeOut = new FadeTransition(Duration.millis(300), messageBox);
                 fadeOut.setFromValue(1.0);
                 fadeOut.setToValue(0.0);
                 fadeOut.setOnFinished(e -> {
                     messageBox.setVisible(false);
-                    messageBox.setManaged(false); 
+                    messageBox.setManaged(false);
                 });
                 fadeOut.play();
             });

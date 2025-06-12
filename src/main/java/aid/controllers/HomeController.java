@@ -6,14 +6,14 @@ import aid.managers.DataManager;
 
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-import javafx.scene.image.Image; 	 	
-import javafx.scene.image.ImageView; 	
-import javafx.scene.control.Label; 	 	
-import javafx.util.Duration; 
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.control.Label;
+import javafx.util.Duration;
 
 import java.io.File;
-import java.net.URI; 
-import java.net.URL; 
+import java.net.URI;
+import java.net.URL;
 
 import java.util.Comparator;
 import java.util.List;
@@ -29,13 +29,13 @@ public class HomeController {
     private Song currentPlayingSong;
 
     private boolean isShuffleOn = false;
-    private boolean isRepeatOn = false; 
+    private boolean isRepeatOn = false;
     private List<Song> shuffledSongs;
 
     public HomeController(HomeView view) {
         this.view = view;
         this.dataManager = new DataManager();
-        
+
         // Mengatur callback seeking dari View ke Controller
         this.view.setSeekCallback(progress -> {
             if (mediaPlayer != null && currentPlayingSong != null) {
@@ -71,9 +71,11 @@ public class HomeController {
         List<Song> songs = dataManager.getSongs();
         if (!songs.isEmpty()) {
             currentPlayingSong = songs.get(0);
-            view.updateCurrentSongInfo(currentPlayingSong); 
+            view.updateCurrentSongInfo(currentPlayingSong);
             initializeMediaPlayer(currentPlayingSong);
-            view.updatePlayPauseButtonIcon(false); 
+            view.updatePlayPauseButtonIcon(false);
+            // Inisialisasi visual tombol kecepatan ke 1x saat aplikasi dimuat
+            view.updateSpeedButtonVisual(1.0);
         } else {
             view.updateCurrentSongInfo(null);
         }
@@ -92,8 +94,8 @@ public class HomeController {
         view.getPlayPauseButton().setOnAction(event -> togglePlayPause());
         view.getPrevButton().setOnAction(event -> playPreviousSong());
         view.getNextButton().setOnAction(event -> playNextSong());
-        view.getShuffleButton().setOnAction(event -> toggleShuffle()); 
-        view.getRepeatButton().setOnAction(event -> toggleRepeat());  
+        view.getShuffleButton().setOnAction(event -> toggleShuffle());
+        view.getRepeatButton().setOnAction(event -> toggleRepeat());
 
         view.getSearchField().textProperty().addListener((observable, oldValue, newValue) -> {
             filterSongs(newValue);
@@ -107,6 +109,16 @@ public class HomeController {
                 view.displaySongs(dataManager.getSongs());
             }
         });
+
+        // Menambahkan event handler untuk semua 8 tombol kecepatan
+        view.getSpeed025xButton().setOnAction(e -> setPlaybackSpeed(0.25));
+        view.getSpeed05xButton().setOnAction(e -> setPlaybackSpeed(0.5));
+        view.getSpeed075xButton().setOnAction(e -> setPlaybackSpeed(0.75));
+        view.getSpeed1xButton().setOnAction(e -> setPlaybackSpeed(1.0));
+        view.getSpeed125xButton().setOnAction(e -> setPlaybackSpeed(1.25));
+        view.getSpeed15xButton().setOnAction(e -> setPlaybackSpeed(1.5));
+        view.getSpeed175xButton().setOnAction(e -> setPlaybackSpeed(1.75));
+        view.getSpeed2xButton().setOnAction(e -> setPlaybackSpeed(2.0));
     }
 
     private void initializeMediaPlayer(Song song) {
@@ -115,7 +127,7 @@ public class HomeController {
             mediaPlayer.dispose();
         }
         try {
-            String resourcePathInClasspath = "/songs/" + song.getFile(); 
+            String resourcePathInClasspath = "/songs/" + song.getFile();
             URL audioUrl = getClass().getResource(resourcePathInClasspath);
 
             System.out.println("DEBUG: Mencoba memuat dari classpath: " + resourcePathInClasspath);
@@ -131,6 +143,8 @@ public class HomeController {
 
             // Set volume awal media player sesuai dengan nilai slider saat ini
             mediaPlayer.setVolume(view.getVolumeSlider().getValue() / 100.0);
+            // Set kecepatan pemutaran awal media player sesuai dengan tombol 1x
+            mediaPlayer.setRate(1.0); // Default ke 1x
 
             mediaPlayer.setOnReady(() -> {
                 System.out.println("DEBUG: Media siap untuk diputar: " + song.getTitle());
@@ -175,7 +189,7 @@ public class HomeController {
             } else {
                 System.out.println("DEBUG: Lagu baru, inisialisasi dan putar.");
                 currentPlayingSong = song;
-                view.updateCurrentSongInfo(currentPlayingSong); 
+                view.updateCurrentSongInfo(currentPlayingSong);
                 initializeMediaPlayer(song);
                 if (mediaPlayer != null) {
                     mediaPlayer.play();
@@ -196,7 +210,7 @@ public class HomeController {
     }
 
     private void playNextSong() {
-        List<Song> currentSongsList = isShuffleOn ? shuffledSongs : dataManager.getSongs(); 
+        List<Song> currentSongsList = isShuffleOn ? shuffledSongs : dataManager.getSongs();
 
         if (currentPlayingSong == null || currentSongsList.isEmpty()) {
             System.out.println("DEBUG: Tidak ada lagu untuk diputar berikutnya.");
@@ -260,7 +274,7 @@ public class HomeController {
     private void toggleShuffle() {
         isShuffleOn = !isShuffleOn;
         System.out.println("DEBUG: Shuffle is now: " + (isShuffleOn ? "ON" : "OFF"));
-        
+
         if (isShuffleOn) {
             shuffledSongs = new ArrayList<>(dataManager.getSongs());
             Collections.shuffle(shuffledSongs);
@@ -269,7 +283,7 @@ public class HomeController {
                 view.getSongListView().getSelectionModel().select(currentPlayingSong);
             }
         } else {
-            view.displaySongs(dataManager.getSongs()); 
+            view.displaySongs(dataManager.getSongs());
             if (currentPlayingSong != null) {
                 view.getSongListView().getSelectionModel().select(currentPlayingSong);
             }
@@ -279,8 +293,17 @@ public class HomeController {
     private void toggleRepeat() {
         isRepeatOn = !isRepeatOn;
         System.out.println("DEBUG: Repeat is now: " + (isRepeatOn ? "ON" : "OFF"));
-        view.updateRepeatButtonVisual(isRepeatOn); 
-        view.showMessage("Mode Ulangi: " + (isRepeatOn ? "AKTIF" : "NONAKTIF"), "info"); 
+        view.updateRepeatButtonVisual(isRepeatOn);
+        view.showMessage("Mode Ulangi: " + (isRepeatOn ? "AKTIF" : "NONAKTIF"), "info");
+    }
+
+    // Metode untuk mengatur kecepatan pemutaran
+    private void setPlaybackSpeed(double rate) {
+        if (mediaPlayer != null) {
+            mediaPlayer.setRate(rate);
+            view.updateSpeedButtonVisual(rate); // Perbarui visual tombol
+            view.showMessage("Kecepatan: " + rate + "x", "info"); // Tampilkan pesan
+        }
     }
 
     private void filterSongs(String searchText) {
