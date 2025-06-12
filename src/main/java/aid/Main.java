@@ -1,4 +1,5 @@
 package aid;
+
 import aid.controllers.LoginController;
 import javafx.application.Application;
 import javafx.scene.Scene;

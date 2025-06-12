@@ -1,4 +1,5 @@
 package aid.controllers;
+
 import aid.models.User;
 import aid.views.RegisterView;
 import javafx.stage.FileChooser;
@@ -76,11 +77,10 @@ public class RegisterController {
                     profilePath = "/images/default_avatar.jpg";
                 }
                 User user = new User(
-                    view.nickField.getText(),
-                    view.fullField.getText(),
-                    view.passField.getText(),
-                    profilePath
-                );
+                        view.nickField.getText(),
+                        view.fullField.getText(),
+                        view.passField.getText(),
+                        profilePath);
                 UserDataUtil.addUser(user);
                 Alert alert = new Alert(Alert.AlertType.INFORMATION, "Registration successful");
                 alert.showAndWait();

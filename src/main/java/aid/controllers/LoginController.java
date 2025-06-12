@@ -1,4 +1,5 @@
 package aid.controllers;
+
 import aid.views.LoginView;
 import javafx.stage.Stage;
 import aid.models.User;
@@ -27,15 +28,8 @@ public class LoginController {
             String pass = view.passField.getText();
             User user = UserDataUtil.findUser(nick, pass);
             if (user != null) {
-                // Buat label link untuk ke halaman utama
-                Label linkToHome = new Label("Akun telah masuk! (klik)");
-                linkToHome.getStyleClass().add("link-label");
-                linkToHome.setOnMouseClicked(ev -> {
-                    // TODO: Pindah ke halaman utama
-                    // Contoh: new MainController(stage).show();
-                });
-                view.loginMessageLabel.setText(""); // reset text
-                view.loginMessageLabel.setGraphic(linkToHome);
+                ProfileController profileController = new ProfileController(stage, user);
+                profileController.show();
             } else {
                 view.loginMessageLabel.setGraphic(null);
                 view.loginMessageLabel.setText("Username/password salah!");
@@ -46,6 +40,7 @@ public class LoginController {
     public void show() {
         stage.setScene(view.getScene());
         stage.setTitle("AID - Login");
+        stage.setFullScreen(true);
         stage.show();
     }
 }

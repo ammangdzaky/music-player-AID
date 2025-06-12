@@ -1,4 +1,5 @@
 package aid.utils;
+
 import aid.models.User;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -15,9 +16,11 @@ public class UserDataUtil {
 
     public static List<User> loadUsers() {
         try {
-            if (!Files.exists(Paths.get(USER_FILE))) return new ArrayList<>();
+            if (!Files.exists(Paths.get(USER_FILE)))
+                return new ArrayList<>();
             Reader reader = Files.newBufferedReader(Paths.get(USER_FILE));
-            Type listType = new TypeToken<List<User>>(){}.getType();
+            Type listType = new TypeToken<List<User>>() {
+            }.getType();
             List<User> users = gson.fromJson(reader, listType);
             reader.close();
             return users != null ? users : new ArrayList<>();
@@ -25,6 +28,17 @@ public class UserDataUtil {
             e.printStackTrace();
             return new ArrayList<>();
         }
+    }
+
+    public static void updateUser(String oldUserName, User updatedUser) {
+        List<User> users = loadUsers();
+        for (int i = 0; i < users.size(); i++) {
+            if (users.get(i).getUserName().equals(oldUserName)) {
+                users.set(i, updatedUser);
+                break;
+            }
+        }
+        saveUsers(users);
     }
 
     public static void saveUsers(List<User> users) {
