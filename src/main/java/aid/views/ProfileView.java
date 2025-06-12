@@ -1,6 +1,7 @@
 package aid.views;
 
 import aid.controllers.ProfileController;
+import aid.models.*;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -22,7 +23,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import aid.models.Song;
+
 import aid.utils.songUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -43,10 +44,13 @@ public class ProfileView {
     private Text playlistCountText;
     private List<File> mySongFiles = new ArrayList<>();
     private FlowPane mySongsPane = new FlowPane(10, 10);
+    private User user;
 
-    public ProfileView(ProfileController controller, Stage primaryStage) {
+    public ProfileView(ProfileController controller, Stage primaryStage, User user) {
         this.controller = controller;
         this.primaryStage = primaryStage;
+        this.user = user;
+
         BorderPane root = new BorderPane();
         root.getStyleClass().add("root");
 
@@ -114,10 +118,23 @@ public class ProfileView {
         // Profile Picture - dengan error handling
         profileImageView = new ImageView();
         try {
-            InputStream profileStream = getClass().getResourceAsStream("/images/indii.jpg");
-            if (profileStream != null) {
-                Image image = new Image(profileStream);
-                profileImageView.setImage(image);
+            if (user.getProfileImagePath() != null && !user.getProfileImagePath().isEmpty()) {
+                // Jika path adalah file lokal
+                File file = new File(user.getProfileImagePath());
+                if (file.exists()) {
+                    profileImageView.setImage(new Image(file.toURI().toString()));
+                } else {
+                    // fallback ke resource jika file tidak ada
+                    InputStream profileStream = getClass().getResourceAsStream(user.getProfileImagePath());
+                    if (profileStream != null) {
+                        profileImageView.setImage(new Image(profileStream));
+                    }
+                }
+            } else {
+                InputStream profileStream = getClass().getResourceAsStream("/images/indii.jpg");
+                if (profileStream != null) {
+                    profileImageView.setImage(new Image(profileStream));
+                }
             }
         } catch (Exception e) {
             System.err.println("Error loading profile image: " + e.getMessage());
@@ -131,10 +148,10 @@ public class ProfileView {
         HBox.setMargin(profileImageView, new Insets(20, 0, 0, 20));
 
         // User Info
-        userName = new Text("Indiraya");
+        userName = new Text(user.getUserName());
         userName.getStyleClass().add("user-name");
 
-        nickName = new Text("@Soyaaa's");
+        nickName = new Text(user.getNickName());
         nickName.getStyleClass().add("nick-name");
 
         VBox userInfoBox = new VBox(userName, nickName);
@@ -330,27 +347,25 @@ public class ProfileView {
         Button saveButton = new Button("Simpan");
         saveButton.getStyleClass().add("save-button");
         saveButton.setOnAction(e -> {
-            // Validasi input
             String newUsername = usernameField.getText().trim();
             String newNickname = nicknameField.getText().trim();
+            String oldUserName = user.getUserName(); // simpan sebelum diubah
 
             if (!newUsername.isEmpty()) {
+                user.setUserName(newUsername);
                 userName.setText(newUsername);
             }
             if (!newNickname.isEmpty()) {
+                user.setNickName(newNickname);
                 nickName.setText(newNickname);
             }
-
             if (selectedFile[0] != null && selectedFile[0].exists()) {
-                try {
-                    Image newImage = new Image(selectedFile[0].toURI().toString());
-                    profileImageView.setImage(newImage);
-                } catch (Exception ex) {
-                    System.err.println("Error loading selected image: " + ex.getMessage());
-                }
+                user.setProfileImagePath(selectedFile[0].getAbsolutePath());
+                profileImageView.setImage(new Image(selectedFile[0].toURI().toString()));
             }
 
-            // Tutup popup dan kembali ke main scene
+            aid.utils.UserDataUtil.updateUser(oldUserName, user);
+
             Stage stage = (Stage) saveButton.getScene().getWindow();
             stage.close();
         });

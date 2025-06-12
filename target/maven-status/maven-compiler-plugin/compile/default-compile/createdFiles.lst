@@ -1,28 +1,20 @@
-aid\models\User.class
-<<<<<<< HEAD
-=======
-aid\views\RegisterView.class
 aid\Main.class
-aid\views\HomeView.class
 aid\controllers\RegisterController.class
->>>>>>> ce416b0c50ba572b100411801497d6ec853f2870
-aid\utils\Validator.class
-aid\controllers\LoginController.class
 aid\utils\IDGenerator.class
-aid\managers\DataManager.class
-<<<<<<< HEAD
-aid\views\LoginView.class
-aid\controllers\ProfileController.class
-=======
-aid\utils\UserDataUtil$1.class
-aid\views\LoginView.class
 aid\controllers\ProfileController.class
 aid\utils\UserDataUtil.class
+aid\models\SmartPlaylist.class
+aid\controllers\HomeController.class
+aid\models\User.class
+aid\views\RegisterView.class
+aid\views\HomeView.class
+aid\utils\Validator.class
+aid\controllers\LoginController.class
+aid\managers\DataManager.class
+aid\utils\UserDataUtil$1.class
+aid\views\LoginView.class
 aid\models\Song.class
 aid\models\StandardPlaylist.class
 aid\models\Playlist.class
 aid\views\ProfileView.class
-aid\models\SmartPlaylist.class
->>>>>>> ce416b0c50ba572b100411801497d6ec853f2870
 aid\managers\SceneManager.class
-aid\controllers\HomeController.class
