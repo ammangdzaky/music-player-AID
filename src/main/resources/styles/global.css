@@ -1,0 +1,50 @@
+    /* resources/styles/global.css */
+
+    .root-pane {
+        -fx-background-color: #000000; /* Warna latar belakang hitam utama */
+    }
+
+    /* Gaya dasar untuk tombol nav/player, bisa di-override di styleHome.css */
+    .nav-button, .player-button {
+        -fx-background-color: transparent;
+        -fx-padding: 5;
+        -fx-border-color: transparent;
+    }
+    .nav-button:hover, .player-button:hover {
+        -fx-background-color: rgba(255, 255, 255, 0.1);
+        -fx-background-radius: 5px;
+    }
+
+    /* Gaya untuk label judul panel (Genre, Lagu Serupa, dll.) */
+    .panel-title {
+        -fx-font-size: 20px;
+        -fx-font-weight: bold;
+        -fx-text-fill: #FFD700; /* Warna kuning cerah */
+    }
+
+    /* Gaya umum untuk list view background */
+    .list-view {
+        -fx-background-color: #000000;
+        -fx-control-inner-background: #000000;
+        -fx-background-insets: 0;
+        -fx-padding: 0;
+    }
+
+    /* Gaya umum untuk scrollbar (opsional) */
+    .scroll-bar:vertical .increment-button,
+    .scroll-bar:vertical .decrement-button,
+    .scroll-bar:horizontal .increment-button,
+    .scroll-bar:horizontal .decrement-button {
+        -fx-padding: 0;
+    }
+
+    .scroll-bar .thumb {
+        -fx-background-color: #FFD700; /* Warna kuning */
+        -fx-background-radius: 5px;
+    }
+
+    .scroll-bar .track {
+        -fx-background-color: #333333; /* Warna abu-abu gelap */
+        -fx-background-radius: 5px;
+    }
+    
