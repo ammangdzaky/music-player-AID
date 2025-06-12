@@ -11,7 +11,8 @@ public class LoginView {
     public TextField nickField = new TextField();
     public PasswordField passField = new PasswordField();
     public Button loginBtn = new Button("Login");
-    public Label toRegisterLabel = new Label("Don't have an account? Sign up");
+    public Label loginMessageLabel = new Label(); // label pesan login
+    public Label toRegisterLabel = new Label("Gak punya akun? Sign up");
     public VBox root;
 
     public LoginView() {
@@ -22,9 +23,14 @@ public class LoginView {
         nickField.setPromptText("Username");
         passField.setPromptText("Password");
         loginBtn.setMaxWidth(300);
+
+        loginMessageLabel.setText("");
+        loginMessageLabel.setWrapText(true);
+        loginMessageLabel.setAlignment(Pos.CENTER);
+
         toRegisterLabel.getStyleClass().add("link-label");
 
-        VBox container = new VBox(10, nickField, passField, loginBtn);
+        VBox container = new VBox(10, nickField, passField, loginBtn, loginMessageLabel);
         container.setAlignment(Pos.CENTER);
         container.setPadding(new Insets(30));
         container.getStyleClass().add("container");

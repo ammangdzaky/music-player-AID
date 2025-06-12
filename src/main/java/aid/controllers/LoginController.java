@@ -3,6 +3,8 @@ import aid.views.LoginView;
 import javafx.stage.Stage;
 import aid.models.User;
 import aid.utils.UserDataUtil;
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
 
 public class LoginController {
     private final Stage stage;
@@ -25,9 +27,18 @@ public class LoginController {
             String pass = view.passField.getText();
             User user = UserDataUtil.findUser(nick, pass);
             if (user != null) {
-                view.toRegisterLabel.setText("Akun telah masuk!"); // Ganti label, bukan popup
+                // Buat label link untuk ke halaman utama
+                Label linkToHome = new Label("Akun telah masuk! (klik)");
+                linkToHome.getStyleClass().add("link-label");
+                linkToHome.setOnMouseClicked(ev -> {
+                    // TODO: Pindah ke halaman utama
+                    // Contoh: new MainController(stage).show();
+                });
+                view.loginMessageLabel.setText(""); // reset text
+                view.loginMessageLabel.setGraphic(linkToHome);
             } else {
-                view.toRegisterLabel.setText("Username/password salah!");
+                view.loginMessageLabel.setGraphic(null);
+                view.loginMessageLabel.setText("Username/password salah!");
             }
         });
     }

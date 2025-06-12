@@ -14,7 +14,7 @@ public class RegisterView {
     public PasswordField passField = new PasswordField();
     public Button uploadBtn = new Button("Upload Profile");
     public Button submitBtn = new Button("Sign up");
-    public Label toLoginLabel = new Label("Already have account? Login");
+    public Label toLoginLabel = new Label("Udah punya akun? Login");
     public ImageView profileView = new ImageView();
     public Image defaultAvatar;
     public StackPane photoPane;
