@@ -36,6 +36,7 @@ public class HomeView {
 
     private Stage stage;
 
+    // --- Deklarasi Field untuk UI yang Dinamis dan diakses Controller ---
     private ListView<Song> songListView;
     private ListView<String> genreListView;
     private Label currentSongTitleLabel;
@@ -44,7 +45,9 @@ public class HomeView {
     private Button playPauseButton;
     private TextField searchField;
 
+
     // --- Konstanta Warna dan Styling ---
+    // Dipertahankan sebagai private static final, tapi ditambahkan getter
     private static final String BG_PRIMARY_DARK = "#000000";
     private static final String ACCENT_YELLOW = "#FFD700";
     private static final String BG_CARD_DARK = "#1a1a1a";
@@ -113,8 +116,8 @@ public class HomeView {
         HBox leftNavIcons = new HBox(10);
         leftNavIcons.setAlignment(Pos.CENTER_LEFT);
         leftNavIcons.getChildren().addAll(
-            createIconButton("🏠", FONT_SIZE_XLARGE, TEXT_LIGHT),
-            createIconButton("👤", FONT_SIZE_XLARGE, TEXT_LIGHT)
+            createIconButton("🏠", FONT_SIZE_XLARGE, TEXT_LIGHT), // Home
+            createIconButton("👤", FONT_SIZE_XLARGE, TEXT_LIGHT)  // Profile
         );
         leftNavIcons.getChildren().forEach(node -> {
             if (node instanceof Button) {
@@ -435,6 +438,7 @@ public class HomeView {
             currentSongArtistLabel.setText(song.getArtist());
             try {
                 // Pastikan path ke cover art benar: /images/namafile.jpg
+                // Default album art sudah ada di HomeView, jadi ini untuk cover spesifik lagu
                 albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/" + song.getCover())));
             } catch (Exception e) {
                 System.err.println("Error loading album art for " + song.getTitle() + ": " + e.getMessage());

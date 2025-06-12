@@ -6,12 +6,14 @@ import aid.managers.DataManager;
 
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-import javafx.util.Duration;
-import javafx.scene.image.Image;      // Ini masih dibutuhkan untuk album art di HomeView, tapi tidak untuk ikon play/pause
-import javafx.scene.image.ImageView;   // Ini masih dibutuhkan untuk album art di HomeView, tapi tidak untuk ikon play/pause
-import javafx.scene.control.Label;     // Import Label
+import javafx.scene.image.Image;      
+import javafx.scene.image.ImageView;   
+import javafx.scene.control.Label;     
 
 import java.io.File;
+import java.net.URI; 
+import java.net.URL; 
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -82,13 +84,26 @@ public class HomeController {
             mediaPlayer.dispose();
         }
         try {
-            File mediaFile = new File("resources/songs/" + song.getFile());
-            if (!mediaFile.exists()) {
-                System.err.println("File musik tidak ditemukan: " + mediaFile.getAbsolutePath());
-                return;
+            String resourcePathInClasspath = "/songs/" + song.getFile(); 
+            URL audioUrl = getClass().getResource(resourcePathInClasspath);
+
+            if (audioUrl == null) {
+                System.err.println("Gagal menemukan file musik di classpath: " + resourcePathInClasspath);
+                File mediaFileFallback = new File("resources/songs/" + song.getFile());
+                if (mediaFileFallback.exists()) {
+                    System.err.println("Namun, file ditemukan melalui jalur sistem file (FALLBACK): " + mediaFileFallback.getAbsolutePath());
+                    Media media = new Media(mediaFileFallback.toURI().toString());
+                    mediaPlayer = new MediaPlayer(media);
+                } else {
+                    System.err.println("File musik juga tidak ditemukan di jalur sistem file: " + mediaFileFallback.getAbsolutePath());
+                    // Notifications.create().title("Error Musik").text("File musik tidak ditemukan untuk: " + song.getTitle()).showError(); // Dihapus
+                    System.err.println("Error: File musik tidak ditemukan untuk " + song.getTitle()); // Ganti dengan System.err
+                    return;
+                }
+            } else {
+                Media media = new Media(audioUrl.toExternalForm());
+                mediaPlayer = new MediaPlayer(media);
             }
-            Media media = new Media(mediaFile.toURI().toString());
-            mediaPlayer = new MediaPlayer(media);
 
             mediaPlayer.setOnReady(() -> {
                 System.out.println("Media siap: " + song.getTitle());
@@ -99,23 +114,22 @@ public class HomeController {
                 mediaPlayer.stop();
             });
 
-            // --- PERBAIKAN DI SINI: Gunakan Label dengan Emojis ---
             mediaPlayer.statusProperty().addListener((observable, oldValue, newValue) -> {
                 Label iconLabel;
                 if (newValue == MediaPlayer.Status.PLAYING) {
-                    iconLabel = new Label("⏸"); // Emoji Pause
+                    iconLabel = new Label("⏸");
                 } else {
-                    iconLabel = new Label("▶"); // Emoji Play
+                    iconLabel = new Label("▶");
                 }
-                // Atur gaya untuk ikon emoji (sesuaikan dengan style di HomeView createPlayerRoundButton)
                 iconLabel.setStyle("-fx-font-size: " + view.getFontSizeLarge() + "; -fx-text-fill: " + view.getBgPrimaryDark() + ";");
                 view.getPlayPauseButton().setGraphic(iconLabel);
             });
-            // --- AKHIR PERBAIKAN ---
 
         } catch (Exception e) {
             System.err.println("Error menginisialisasi media player untuk " + song.getTitle() + ": " + e.getMessage());
             e.printStackTrace();
+            // Notifications.create().title("Error Musik").text("Gagal memutar lagu: " + song.getTitle() + "\n" + e.getMessage()).showError(); // Dihapus
+            System.err.println("Error: Gagal memutar lagu: " + song.getTitle() + " - " + e.getMessage()); // Ganti dengan System.err
         }
     }
 

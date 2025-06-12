@@ -10,13 +10,16 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        HomeView homeView = new HomeView(primaryStage); // Buat HomeView
-        HomeController homeController = new HomeController(homeView); // Buat HomeController dan inject HomeView
+        // Buat instance HomeView
+        HomeView homeView = new HomeView(primaryStage);
+        
+        // Buat instance HomeController dan injeksikan HomeView ke dalamnya
+        HomeController homeController = new HomeController(homeView);
 
-        // Panggil metode awal di controller untuk memuat data dan mengatur event handlers
-        homeController.loadSongsAndGenres();
-        homeController.loadInitialPlayerInfo();
-        homeController.setupEventHandlers();
+        // Panggil metode-metode di HomeController untuk memuat data dan mengatur event handlers
+        homeController.loadSongsAndGenres();     // Muat lagu dan genre ke HomeView
+        homeController.loadInitialPlayerInfo();  // Muat info lagu pertama ke panel player
+        homeController.setupEventHandlers();     // Atur event handlers (misal klik lagu, tombol play/pause)
     }
 
     public static void main(String[] args) {

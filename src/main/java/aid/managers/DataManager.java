@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class DataManager {
     private static final String USERS_FILE = "data/users.json";
     private static final String PLAYLISTS_FILE = "data/playlists.json";
-    private static final String SONGS_RESOURCE_PATH = "/songs.json"; // PATH SONGS.JSON DARI ROOT RESOURCES
+    private static final String SONGS_RESOURCE_PATH = "/data/songs.json"; 
 
     private Gson gson;
 
