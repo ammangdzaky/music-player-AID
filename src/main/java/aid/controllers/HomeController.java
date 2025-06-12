@@ -29,7 +29,7 @@ public class HomeController {
     private Song currentPlayingSong;
 
     private boolean isShuffleOn = false;
-    private boolean isRepeatOn = false;
+    private boolean isRepeatOn = false; 
     private List<Song> shuffledSongs;
 
     public HomeController(HomeView view) {
@@ -71,7 +71,7 @@ public class HomeController {
         List<Song> songs = dataManager.getSongs();
         if (!songs.isEmpty()) {
             currentPlayingSong = songs.get(0);
-            view.updateCurrentSongInfo(currentPlayingSong);
+            view.updateCurrentSongInfo(currentPlayingSong); 
             initializeMediaPlayer(currentPlayingSong);
             view.updatePlayPauseButtonIcon(false); 
         } else {
@@ -148,7 +148,9 @@ public class HomeController {
             mediaPlayer.setOnEndOfMedia(() -> {
                 System.out.println("DEBUG: Lagu selesai: " + song.getTitle());
                 if (isRepeatOn) {
-                    playSong(currentPlayingSong);
+                    mediaPlayer.seek(Duration.ZERO);
+                    mediaPlayer.play();
+                    System.out.println("DEBUG: Lagu '" + currentPlayingSong.getTitle() + "' diulang.");
                 } else {
                     playNextSong();
                 }
@@ -167,13 +169,13 @@ public class HomeController {
     public void playSong(Song song) {
         if (song != null) {
             System.out.println("DEBUG: playSong dipanggil untuk: " + song.getTitle());
-            if (mediaPlayer != null && currentPlayingSong != null && currentPlayingSong.getId() == song.getId()) {
+            if (mediaPlayer != null && currentPlayingSong != null && currentPlayingSong.getId() == song.getId() && mediaPlayer.getStatus() != MediaPlayer.Status.STOPPED) {
                 System.out.println("DEBUG: Lagu yang sama, toggle Play/Pause.");
                 togglePlayPause();
             } else {
                 System.out.println("DEBUG: Lagu baru, inisialisasi dan putar.");
                 currentPlayingSong = song;
-                view.updateCurrentSongInfo(currentPlayingSong);
+                view.updateCurrentSongInfo(currentPlayingSong); 
                 initializeMediaPlayer(song);
                 if (mediaPlayer != null) {
                     mediaPlayer.play();

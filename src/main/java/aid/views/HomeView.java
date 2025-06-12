@@ -61,6 +61,10 @@ public class HomeView {
     private Label currentTimeLabel;
     private Label totalTimeLabel;
 
+    // Komponen baru untuk mini "Now Playing" display
+    private Label nowPlayingMiniLabel; // Deklarasi label
+    private HBox nowPlayingContainer; // Deklarasi kontainer
+
     // Callback untuk controller (akan diatur oleh HomeController)
     private SeekCallback seekCallback;
 
@@ -384,7 +388,7 @@ public class HomeView {
         volumeControl.setAlignment(Pos.CENTER);
         Label volumeIcon = new Label("🔊");
         volumeIcon.setStyle("-fx-font-size: 20px; -fx-text-fill: " + TEXT_LIGHT + ";");
-        volumeSlider = new Slider(0, 100, 50); // Inisialisasi volumeSlider
+        volumeSlider = new Slider(0, 100, 50); 
         volumeSlider.setPrefWidth(200);
         volumeSlider.getStyleClass().add("volume-slider");
         volumeControl.getChildren().addAll(volumeIcon, volumeSlider);
@@ -425,7 +429,6 @@ public class HomeView {
         songProgressBar.setMaxWidth(Double.MAX_VALUE); 
         songProgressBar.getStyleClass().add("song-progress-bar");
         
-        // Menambahkan event handler untuk seeking pada ProgressBar
         songProgressBar.setOnMousePressed(e -> {
             if (seekCallback != null) {
                 double progress = e.getX() / songProgressBar.getWidth();
@@ -450,17 +453,18 @@ public class HomeView {
         totalTimeLabel.getStyleClass().add("time-label");
         timeLabels.getChildren().addAll(currentTimeLabel, spacer, totalTimeLabel);
 
-        HBox centerControls = new HBox(20);
-        centerControls.setAlignment(Pos.CENTER);
-        centerControls.getChildren().addAll(
-            createPlayerRoundButton("🔀"),
-            createPlayerRoundButton("⏮️"),
-            createPlayerRoundButton("▶️"),
-            createPlayerRoundButton("⏭️"),
-            createPlayerRoundButton("🔁")
-        );
+        // Mengganti tombol duplikat dengan kontainer untuk "Now Playing" mini display
+        nowPlayingMiniLabel = new Label("Tidak ada lagu diputar");
+        nowPlayingContainer = new HBox();
+        nowPlayingContainer.getStyleClass().add("now-playing-mini-display"); // Terapkan style class baru
+        nowPlayingContainer.setAlignment(Pos.CENTER);
+        nowPlayingContainer.getChildren().add(nowPlayingMiniLabel);
+        HBox.setHgrow(nowPlayingContainer, Priority.ALWAYS); 
+        // Menambahkan margin atas ke nowPlayingContainer untuk menaikkannya
+        // Ini akan menciptakan jarak antara progress bar dan teks
+        nowPlayingContainer.setPadding(new Insets(10, 0, 0, 0)); 
 
-        playerArea.getChildren().addAll(songProgressBar, timeLabels, centerControls);
+        playerArea.getChildren().addAll(songProgressBar, timeLabels, nowPlayingContainer); 
         return playerArea;
     }
 
@@ -533,6 +537,10 @@ public class HomeView {
         if (song != null) {
             currentSongTitleLabel.setText(song.getTitle());
             currentSongArtistLabel.setText(song.getArtist());
+            // Memperbarui label "Now Playing" mini
+            Platform.runLater(() -> {
+                nowPlayingMiniLabel.setText(song.getTitle() + " - " + song.getArtist());
+            });
             try {
                 albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/" + song.getCover())));
             } catch (Exception e) {
@@ -542,6 +550,9 @@ public class HomeView {
         } else {
             currentSongTitleLabel.setText("No Song Playing");
             currentSongArtistLabel.setText("");
+            Platform.runLater(() -> {
+                nowPlayingMiniLabel.setText("Tidak ada lagu diputar");
+            });
             albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
         }
     }
