@@ -2,6 +2,7 @@ package aid.utils;
 import aid.models.User;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -10,7 +11,7 @@ import java.util.*;
 
 public class UserDataUtil {
     private static final String USER_FILE = "data/users.json";
-    private static final Gson gson = new Gson();
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public static List<User> loadUsers() {
         try {
@@ -47,5 +48,14 @@ public class UserDataUtil {
             }
         }
         return null;
+    }
+
+    public static boolean isUsernameTaken(String userName) {
+        for (User user : loadUsers()) {
+            if (user.getUserName().equalsIgnoreCase(userName)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

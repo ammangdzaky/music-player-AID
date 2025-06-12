@@ -9,8 +9,8 @@
 }
 
 .text-field, .password-field {
-    -fx-background-color: #F1F1F1;
-    -fx-text-fill: #333;
+    -fx-background-color: #ededed;
+    -fx-text-fill: #232323;
     -fx-border-color: transparent;
     -fx-background-radius: 25;
     -fx-border-radius: 25;
@@ -21,7 +21,7 @@
 
 .button {
     -fx-background-color: #DCB708;
-    -fx-text-fill: white;
+    -fx-text-fill: black;
     -fx-font-weight: bold;
     -fx-pref-width: 300px;
     -fx-max-width: 300px;
