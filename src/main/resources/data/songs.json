@@ -5,9 +5,9 @@
     "artist": "Dere",
     "album": "Berlayar",
     "genre": "Pop",
-    "durationSeconds": 209,
-    "file": "kota.wav",          
-    "cover": "coverKota.jpg"     
+    "durationSeconds": 198,
+    "file": "kota.wav",
+    "cover": "coverKota.jpg"
   },
   {
     "id": 2,
@@ -15,9 +15,9 @@
     "artist": "Niki",
     "album": "Moonchild",
     "genre": "R&B",
-    "durationSeconds": 240,
-    "file": "NIKI - Did You Like Her In The Morning.wav", 
-    "cover": "coverKota.jpg"                               
+    "durationSeconds": 217,
+    "file": "NIKI - Did You Like Her In The Morning.wav",
+    "cover": "coverKota.jpg"
   },
   {
     "id": 3,
@@ -25,7 +25,7 @@
     "artist": "Tulus",
     "album": "Manusia",
     "genre": "Pop",
-    "durationSeconds": 220,
+    "durationSeconds": 237,
     "file": "TULUS - Jatuh Suka.wav",
     "cover": "coverKota.jpg"
   },
@@ -35,7 +35,7 @@
     "artist": "Tulus",
     "album": "Monokrom",
     "genre": "Pop",
-    "durationSeconds": 280,
+    "durationSeconds": 218,
     "file": "TULUS - Langit Abu-abu.wav",
     "cover": "coverKota.jpg"
   },
@@ -45,7 +45,7 @@
     "artist": "Feby Putri",
     "album": "Cahaya",
     "genre": "Folk",
-    "durationSeconds": 190,
+    "durationSeconds": 336,
     "file": "Usik - Feby Putri.wav",
     "cover": "coverKota.jpg"
   },
@@ -55,7 +55,7 @@
     "artist": "NIKI",
     "album": "Nicole",
     "genre": "R&B",
-    "durationSeconds": 250,
+    "durationSeconds": 283,
     "file": "NIKI - Backburner.wav",
     "cover": "coverKota.jpg"
   }

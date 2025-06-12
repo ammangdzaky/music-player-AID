@@ -19,14 +19,14 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane; // Import StackPane
+import javafx.scene.layout.StackPane; 
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.scene.input.KeyCode;
-import javafx.util.Duration; // Import Duration
+import javafx.util.Duration; 
 
 import org.controlsfx.control.Notifications; 
 import animatefx.animation.*;
@@ -56,9 +56,17 @@ public class HomeView {
     private VBox messageBox;
     private Label messageLabel;
 
+    // Komponen baru untuk progress bar dan label waktu
+    private ProgressBar songProgressBar;
+    private Label currentTimeLabel;
+    private Label totalTimeLabel;
+
+    // Callback untuk controller (akan diatur oleh HomeController)
+    private SeekCallback seekCallback;
+
 
     private static final String BG_PRIMARY_DARK = "#000000";
-    private static final String ACCENT_YELLOW = "#FFD700"; // Pastikan ini konsisten dengan CSS
+    private static final String ACCENT_YELLOW = "#FFD700"; 
     private static final String BG_CARD_DARK = "#1a1a1a";
     private static final String TEXT_LIGHT = "#FFFFFF";
     private static final String TEXT_MEDIUM_GRAY = "#AAAAAA";
@@ -78,8 +86,17 @@ public class HomeView {
         initializeUI();
     }
 
+    // Antarmuka callback untuk seeking
+    public interface SeekCallback {
+        void onSeek(double progress);
+    }
+
+    public void setSeekCallback(SeekCallback callback) {
+        this.seekCallback = callback;
+    }
+
     private void initializeUI() {
-        BorderPane contentPane = new BorderPane(); // Rename root to contentPane
+        BorderPane contentPane = new BorderPane(); 
         contentPane.getStyleClass().add("root-pane");
         contentPane.setStyle("-fx-border-color: " + BORDER_YELLOW + "; -fx-border-width: 3px; -fx-border-radius: " + BORDER_RADIUS_LG + ";");
 
@@ -99,17 +116,19 @@ public class HomeView {
         messageLabel = new Label();
         messageBox = new VBox(messageLabel);
         messageBox.getStyleClass().add("message-box");
-        messageBox.setVisible(false); // Sembunyikan secara default
-        messageBox.setManaged(false); // Tidak memengaruhi layout saat disembunyikan
+        messageBox.setVisible(false); 
+        messageBox.setManaged(false); 
         messageBox.setAlignment(Pos.CENTER);
 
 
         // Buat StackPane sebagai root utama scene
         StackPane root = new StackPane();
-        root.getChildren().addAll(contentPane, messageBox); // Tambahkan contentPane dan messageBox
-        StackPane.setAlignment(messageBox, Pos.TOP_CENTER); // Posisikan messageBox di tengah atas
+        root.getChildren().addAll(contentPane, messageBox); 
+        StackPane.setAlignment(messageBox, Pos.TOP_CENTER); 
+        // Mengatur margin agar messageBox tidak menempel di atas
+        StackPane.setMargin(messageBox, new Insets(20, 0, 0, 0)); 
 
-        Scene scene = new Scene(root); // Gunakan StackPane sebagai root scene
+        Scene scene = new Scene(root); 
         scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
         scene.getStylesheets().add(getClass().getResource("/styles/homeStyle.css").toExternalForm());
 
@@ -122,7 +141,7 @@ public class HomeView {
         scene.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
                 stage.setFullScreen(false);
-                showMessage("Keluar dari mode Full Screen.", "info"); // Gunakan showMessage kustom
+                showMessage("Keluar dari mode Full Screen.", "info"); 
             }
         });
 
@@ -138,8 +157,8 @@ public class HomeView {
         HBox leftNavIcons = new HBox(10);
         leftNavIcons.setAlignment(Pos.CENTER_LEFT);
         leftNavIcons.getChildren().addAll(
-            createIconButton("🏠", FONT_SIZE_XLARGE, TEXT_LIGHT), // Home
-            createIconButton("👤", FONT_SIZE_XLARGE, TEXT_LIGHT)  // Profile
+            createIconButton("🏠", FONT_SIZE_XLARGE, TEXT_LIGHT), 
+            createIconButton("👤", FONT_SIZE_XLARGE, TEXT_LIGHT)  
         );
         leftNavIcons.getChildren().forEach(node -> {
             if (node instanceof Button) {
@@ -172,7 +191,7 @@ public class HomeView {
         searchButton.getStyleClass().add("search-button");
 
         Runnable performSearch = () -> {
-            showMessage("Mencari: " + searchField.getText().trim(), "info"); // Gunakan showMessage kustom
+            showMessage("Mencari: " + searchField.getText().trim(), "info"); 
             new Shake(searchField).play();
         };
         searchButton.setOnAction(e -> performSearch.run());
@@ -306,6 +325,7 @@ public class HomeView {
                     setGraphic(null);
                 } else {
                     titleLabel.setText(song.getTitle());
+                    // Memanggil formatDuration yang sekarang ada di HomeView
                     artistDurationLabel.setText(song.getArtist() + " • " + formatDuration(song.getDurationSeconds()));
                     albumLabel.setText(song.getAlbum());
 
@@ -352,11 +372,11 @@ public class HomeView {
         playerControls.setAlignment(Pos.CENTER);
         playerControls.setPadding(new Insets(10));
         playerControls.getChildren().addAll(
-            shuffleButton = createPlayerRoundButton("🔀"), // Assign to field
+            shuffleButton = createPlayerRoundButton("🔀"), 
             prevButton = createPlayerRoundButton("⏮️"),
             playPauseButton = createPlayerRoundButton("▶️"),
             nextButton = createPlayerRoundButton("⏭️"),
-            repeatButton = createPlayerRoundButton("🔁") // Assign to field
+            repeatButton = createPlayerRoundButton("🔁") 
         );
         column.getChildren().add(playerControls);
 
@@ -364,7 +384,7 @@ public class HomeView {
         volumeControl.setAlignment(Pos.CENTER);
         Label volumeIcon = new Label("🔊");
         volumeIcon.setStyle("-fx-font-size: 20px; -fx-text-fill: " + TEXT_LIGHT + ";");
-        volumeSlider = new Slider(0, 100, 50); // <--- Inisialisasi field volumeSlider
+        volumeSlider = new Slider(0, 100, 50); // Inisialisasi volumeSlider
         volumeSlider.setPrefWidth(200);
         volumeSlider.getStyleClass().add("volume-slider");
         volumeControl.getChildren().addAll(volumeIcon, volumeSlider);
@@ -375,13 +395,12 @@ public class HomeView {
 
     private Button createPlayerRoundButton(String iconText) {
         Label iconLabel = new Label(iconText);
-        // Mengubah warna teks ikon default menjadi kuning (ACCENT_YELLOW)
         iconLabel.setStyle("-fx-font-size: " + FONT_SIZE_LARGE + "; -fx-text-fill: " + ACCENT_YELLOW + ";");
         Button button = new Button();
         button.setGraphic(iconLabel);
         button.setPrefSize(40, 40);
         button.getStyleClass().add("player-round-button");
-        return button; // Tidak perlu setOnAction di sini, akan di handle di controller
+        return button; 
     }
 
     // Metode untuk memperbarui ikon Play/Pause
@@ -392,7 +411,6 @@ public class HomeView {
         } else {
             iconLabel = new Label("▶");
         }
-        // Mengubah ikon play/pause selalu kuning
         iconLabel.setStyle("-fx-font-size: " + FONT_SIZE_LARGE + "; -fx-text-fill: " + ACCENT_YELLOW + ";");
         playPauseButton.setGraphic(iconLabel);
     }
@@ -403,23 +421,38 @@ public class HomeView {
         playerArea.setPadding(new Insets(10, 20, 10, 20));
         playerArea.getStyleClass().add("bottom-player-area");
 
-        ProgressBar songProgressBar = new ProgressBar(0.5);
-        songProgressBar.setPrefWidth(1000);
+        songProgressBar = new ProgressBar(0.0); 
+        songProgressBar.setMaxWidth(Double.MAX_VALUE); 
         songProgressBar.getStyleClass().add("song-progress-bar");
         
+        // Menambahkan event handler untuk seeking pada ProgressBar
+        songProgressBar.setOnMousePressed(e -> {
+            if (seekCallback != null) {
+                double progress = e.getX() / songProgressBar.getWidth();
+                seekCallback.onSeek(progress);
+            }
+        });
+
+        songProgressBar.setOnMouseDragged(e -> {
+            if (seekCallback != null) {
+                double progress = e.getX() / songProgressBar.getWidth();
+                progress = Math.max(0.0, Math.min(1.0, progress));
+                seekCallback.onSeek(progress);
+            }
+        });
+
         HBox timeLabels = new HBox();
-        Label currentTime = new Label("0:00");
-        currentTime.getStyleClass().add("time-label");
+        currentTimeLabel = new Label("0:00"); 
+        currentTimeLabel.getStyleClass().add("time-label");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label totalTime = new Label("3:29");
-        totalTime.getStyleClass().add("time-label");
-        timeLabels.getChildren().addAll(currentTime, spacer, totalTime);
+        totalTimeLabel = new Label("0:00"); 
+        totalTimeLabel.getStyleClass().add("time-label");
+        timeLabels.getChildren().addAll(currentTimeLabel, spacer, totalTimeLabel);
 
         HBox centerControls = new HBox(20);
         centerControls.setAlignment(Pos.CENTER);
         centerControls.getChildren().addAll(
-            // Tombol-tombol ini juga akan mendapatkan ikon kuning
             createPlayerRoundButton("🔀"),
             createPlayerRoundButton("⏮️"),
             createPlayerRoundButton("▶️"),
@@ -431,6 +464,22 @@ public class HomeView {
         return playerArea;
     }
 
+    // Metode untuk memperbarui progress bar
+    public void updateProgressBar(double progress) {
+        Platform.runLater(() -> songProgressBar.setProgress(progress));
+    }
+
+    // Metode untuk memperbarui label waktu saat ini
+    public void updateCurrentTimeLabel(String time) {
+        Platform.runLater(() -> currentTimeLabel.setText(time));
+    }
+
+    // Metode untuk memperbarui label total waktu
+    public void updateTotalTimeLabel(String time) {
+        Platform.runLater(() -> totalTimeLabel.setText(time));
+    }
+
+    // Mengembalikan metode formatDuration ke HomeView
     private String formatDuration(int totalSeconds) {
         int minutes = totalSeconds / 60;
         int seconds = totalSeconds % 60;
@@ -465,6 +514,11 @@ public class HomeView {
 
     public Button getRepeatButton() {
         return repeatButton;
+    }
+
+    // Menambahkan getter untuk volumeSlider
+    public Slider getVolumeSlider() {
+        return volumeSlider;
     }
 
     public void displaySongs(List<Song> songs) {
@@ -521,27 +575,24 @@ public class HomeView {
      */
     public void showMessage(String message, String type) {
         messageLabel.setText(message);
-        // Bisa tambahkan logika untuk berbagai 'type' pesan di sini (misal: warna background berbeda)
-        // For now, we only have one style in CSS for .message-box
 
-        // Pastikan tampil di UI thread
         Platform.runLater(() -> {
             messageBox.setVisible(true);
-            messageBox.setManaged(true); // Memengaruhi layout lagi
+            messageBox.setManaged(true); 
 
             FadeTransition fadeIn = new FadeTransition(Duration.millis(300), messageBox);
             fadeIn.setFromValue(0.0);
             fadeIn.setToValue(1.0);
             fadeIn.play();
 
-            PauseTransition delay = new PauseTransition(Duration.seconds(2.5)); // Tampilkan selama 2.5 detik
+            PauseTransition delay = new PauseTransition(Duration.seconds(2.0)); 
             delay.setOnFinished(event -> {
                 FadeTransition fadeOut = new FadeTransition(Duration.millis(300), messageBox);
                 fadeOut.setFromValue(1.0);
                 fadeOut.setToValue(0.0);
                 fadeOut.setOnFinished(e -> {
                     messageBox.setVisible(false);
-                    messageBox.setManaged(false); // Sembunyikan lagi
+                    messageBox.setManaged(false); 
                 });
                 fadeOut.play();
             });

@@ -9,6 +9,7 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.image.Image; 	 	
 import javafx.scene.image.ImageView; 	
 import javafx.scene.control.Label; 	 	
+import javafx.util.Duration; 
 
 import java.io.File;
 import java.net.URI; 
@@ -34,6 +35,25 @@ public class HomeController {
     public HomeController(HomeView view) {
         this.view = view;
         this.dataManager = new DataManager();
+        
+        // Mengatur callback seeking dari View ke Controller
+        this.view.setSeekCallback(progress -> {
+            if (mediaPlayer != null && currentPlayingSong != null) {
+                Duration totalDuration = mediaPlayer.getMedia().getDuration();
+                if (totalDuration != Duration.UNKNOWN) {
+                    mediaPlayer.seek(totalDuration.multiply(progress));
+                }
+            }
+        });
+
+        // Menambahkan listener untuk volumeSlider
+        this.view.getVolumeSlider().valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (mediaPlayer != null) {
+                // Volume MediaPlayer berkisar dari 0.0 hingga 1.0
+                // Slider volume berkisar dari 0 hingga 100
+                mediaPlayer.setVolume(newValue.doubleValue() / 100.0);
+            }
+        });
     }
 
     public void loadSongsAndGenres() {
@@ -53,7 +73,6 @@ public class HomeController {
             currentPlayingSong = songs.get(0);
             view.updateCurrentSongInfo(currentPlayingSong);
             initializeMediaPlayer(currentPlayingSong);
-            // Inisialisasi ikon play/pause ke warna kuning saat pertama kali dimuat
             view.updatePlayPauseButtonIcon(false); 
         } else {
             view.updateCurrentSongInfo(null);
@@ -73,8 +92,8 @@ public class HomeController {
         view.getPlayPauseButton().setOnAction(event -> togglePlayPause());
         view.getPrevButton().setOnAction(event -> playPreviousSong());
         view.getNextButton().setOnAction(event -> playNextSong());
-        view.getShuffleButton().setOnAction(event -> toggleShuffle()); // Hubungkan tombol Shuffle
-        view.getRepeatButton().setOnAction(event -> toggleRepeat());  // Hubungkan tombol Repeat
+        view.getShuffleButton().setOnAction(event -> toggleShuffle()); 
+        view.getRepeatButton().setOnAction(event -> toggleRepeat());  
 
         view.getSearchField().textProperty().addListener((observable, oldValue, newValue) -> {
             filterSongs(newValue);
@@ -110,8 +129,20 @@ public class HomeController {
             Media media = new Media(audioUrl.toExternalForm());
             mediaPlayer = new MediaPlayer(media);
 
+            // Set volume awal media player sesuai dengan nilai slider saat ini
+            mediaPlayer.setVolume(view.getVolumeSlider().getValue() / 100.0);
+
             mediaPlayer.setOnReady(() -> {
                 System.out.println("DEBUG: Media siap untuk diputar: " + song.getTitle());
+                view.updateTotalTimeLabel(formatDuration((int)mediaPlayer.getMedia().getDuration().toSeconds()));
+            });
+
+            mediaPlayer.currentTimeProperty().addListener((observable, oldValue, newValue) -> {
+                if (mediaPlayer.getMedia().getDuration() != Duration.UNKNOWN) {
+                    double progress = newValue.toMillis() / mediaPlayer.getMedia().getDuration().toMillis();
+                    view.updateProgressBar(progress);
+                    view.updateCurrentTimeLabel(formatDuration((int)newValue.toSeconds()));
+                }
             });
 
             mediaPlayer.setOnEndOfMedia(() -> {
@@ -123,7 +154,6 @@ public class HomeController {
                 }
             });
 
-            // Perbarui ikon play/pause berdasarkan status MediaPlayer
             mediaPlayer.statusProperty().addListener((observable, oldValue, newValue) -> {
                 view.updatePlayPauseButtonIcon(newValue == MediaPlayer.Status.PLAYING);
             });
@@ -228,7 +258,6 @@ public class HomeController {
     private void toggleShuffle() {
         isShuffleOn = !isShuffleOn;
         System.out.println("DEBUG: Shuffle is now: " + (isShuffleOn ? "ON" : "OFF"));
-        // Pesan untuk shuffle dihilangkan
         
         if (isShuffleOn) {
             shuffledSongs = new ArrayList<>(dataManager.getSongs());
@@ -248,8 +277,8 @@ public class HomeController {
     private void toggleRepeat() {
         isRepeatOn = !isRepeatOn;
         System.out.println("DEBUG: Repeat is now: " + (isRepeatOn ? "ON" : "OFF"));
-        view.updateRepeatButtonVisual(isRepeatOn); // Memanggil metode update visual tombol repeat
-        view.showMessage("Mode Ulangi: " + (isRepeatOn ? "AKTIF" : "NONAKTIF"), "info"); // Pesan kustom untuk repeat
+        view.updateRepeatButtonVisual(isRepeatOn); 
+        view.showMessage("Mode Ulangi: " + (isRepeatOn ? "AKTIF" : "NONAKTIF"), "info"); 
     }
 
     private void filterSongs(String searchText) {
@@ -279,5 +308,11 @@ public class HomeController {
         return dataManager.getSongs().stream()
                 .sorted(Comparator.comparing(Song::getTitle))
                 .collect(Collectors.toList());
+    }
+
+    private String formatDuration(int totalSeconds) {
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        return String.format("%d:%02d", minutes, seconds);
     }
 }
