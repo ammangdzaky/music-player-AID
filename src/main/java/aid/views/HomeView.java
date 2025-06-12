@@ -6,9 +6,12 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -21,15 +24,25 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.scene.input.KeyCode;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 
 import org.controlsfx.control.Notifications;
 import animatefx.animation.*;
 
+import aid.models.Song;
+
+import java.util.List;
+
 public class HomeView {
 
     private Stage stage;
+
+    private ListView<Song> songListView;
+    private ListView<String> genreListView;
+    private Label currentSongTitleLabel;
+    private Label currentSongArtistLabel;
+    private ImageView albumArtImageView;
+    private Button playPauseButton;
+    private TextField searchField;
 
     // --- Konstanta Warna dan Styling ---
     private static final String BG_PRIMARY_DARK = "#000000";
@@ -97,12 +110,11 @@ public class HomeView {
         header.setAlignment(Pos.CENTER_LEFT);
         header.getStyleClass().add("header-pane");
 
-        // --- Grup Ikon Navigasi Kiri (Home, Profile) ---
         HBox leftNavIcons = new HBox(10);
         leftNavIcons.setAlignment(Pos.CENTER_LEFT);
         leftNavIcons.getChildren().addAll(
-            createIconButton("🏠", FONT_SIZE_XLARGE, TEXT_LIGHT), // Home
-            createIconButton("👤", FONT_SIZE_XLARGE, TEXT_LIGHT)  // Profile (Tetap gunakan 👤, masalahnya ada di font sistem)
+            createIconButton("🏠", FONT_SIZE_XLARGE, TEXT_LIGHT),
+            createIconButton("👤", FONT_SIZE_XLARGE, TEXT_LIGHT)
         );
         leftNavIcons.getChildren().forEach(node -> {
             if (node instanceof Button) {
@@ -115,15 +127,9 @@ public class HomeView {
 
         ImageView appLogoImageView = null;
         try {
-            // --- KOREKSI UKURAN LOGO DI SINI (Ditingkatkan Lebih Lanjut) ---
             appLogoImageView = new ImageView(new Image(getClass().getResourceAsStream("/images/logo.jpg")));
-            appLogoImageView.setFitWidth(190); 
-            appLogoImageView.setFitHeight(50); 
-            // Jika masih terlalu kecil/buram, coba:
-            // appLogoImageView.setFitWidth(250);
-            // appLogoImageView.setFitHeight(75);
-            // Dan pastikan gambar logo.jpg asli Anda memiliki resolusi yang cukup tinggi
-            // --- AKHIR KOREKSI ---
+            appLogoImageView.setFitWidth(200); // Coba lebar 200px
+            appLogoImageView.setFitHeight(60); // Coba tinggi 60px
             appLogoImageView.setPreserveRatio(true);
             appLogoImageView.getStyleClass().add("app-logo-image");
         } catch (Exception e) {
@@ -133,7 +139,7 @@ public class HomeView {
             appLogoImageView = new ImageView();
         }
         
-        TextField searchField = new TextField();
+        searchField = new TextField(); // Inisialisasi searchField
         searchField.setPromptText("Search...");
         searchField.getStyleClass().add("search-field");
 
@@ -191,12 +197,11 @@ public class HomeView {
         Label genreTitle = new Label("Genre");
         genreTitle.getStyleClass().add("genre-title");
 
-        String[] genres = {"Rock", "Jazz", "POP", "Instrume", "POP Punk", "KPOP", "R&B"};
-        for (String genre : genres) {
-            Button genreBtn = createGenreButton(genre);
-            sidebar.getChildren().add(genreBtn);
-        }
+        genreListView = new ListView<>();
+        genreListView.getStyleClass().add("genre-list");
+        genreListView.setPrefHeight(200);
 
+        sidebar.getChildren().addAll(genreTitle, genreListView);
         return sidebar;
     }
 
@@ -243,51 +248,60 @@ public class HomeView {
         
         column.getChildren().add(header);
 
-        GridPane songListGrid = new GridPane();
-        songListGrid.setHgap(10);
-        songListGrid.setVgap(10);
+        songListView = new ListView<>();
+        songListView.getStyleClass().add("song-list");
+        songListView.setCellFactory(param -> new javafx.scene.control.ListCell<Song>() {
+            private final HBox cellLayout = new HBox(10);
+            private final ImageView songAlbumArt = new ImageView();
+            private final VBox textInfo = new VBox(2);
+            private final Label titleLabel = new Label();
+            private final Label artistDurationLabel = new Label();
+            private final Label albumLabel = new Label();
 
-        String[] songTitles = {"Kota", "Senja", "Harapan", "Mimpi", "Pergi"};
-        String[] artistDurations = {"Dere Cillian • 3:29", "Band A • 4:10", "Penyanyi B • 2:55", "Grup C • 3:40", "Solois D • 4:05"};
-        String[] albumTitles = {"Berlayar", "Kekal", "Abadi", "Jaya", "Mind"};
+            { // Inisialisasi awal untuk setiap cell
+                songAlbumArt.setFitWidth(40);
+                songAlbumArt.setFitHeight(40);
+                songAlbumArt.setClip(new Circle(20, 20, 20)); // Membuat lingkaran
 
-        for (int i = 0; i < songTitles.length; i++) {
-            addSongItemToGrid(songListGrid, i, songTitles[i], artistDurations[i], albumTitles[i]);
-        }
+                titleLabel.getStyleClass().add("song-title-list");
+                artistDurationLabel.getStyleClass().add("song-artist-duration-list");
+                albumLabel.getStyleClass().add("song-album-list");
+                albumLabel.setMaxWidth(150);
+                albumLabel.setWrapText(true);
 
-        column.getChildren().add(songListGrid);
+                textInfo.getChildren().addAll(titleLabel, artistDurationLabel);
+                
+                cellLayout.setAlignment(Pos.CENTER_LEFT);
+                cellLayout.setPadding(new Insets(5, 0, 5, 0));
+                HBox.setHgrow(textInfo, Priority.ALWAYS);
+                
+                cellLayout.getChildren().addAll(songAlbumArt, textInfo, albumLabel);
+            }
+
+            @Override
+            protected void updateItem(Song song, boolean empty) {
+                super.updateItem(song, empty);
+                if (empty || song == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    titleLabel.setText(song.getTitle());
+                    artistDurationLabel.setText(song.getArtist() + " • " + formatDuration(song.getDurationSeconds()));
+                    albumLabel.setText(song.getAlbum());
+
+                    try {
+                        songAlbumArt.setImage(new Image(getClass().getResourceAsStream("/images/" + song.getCover())));
+                    } catch (Exception e) {
+                        System.err.println("Error loading cover art for " + song.getTitle() + ": " + e.getMessage());
+                        songAlbumArt.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+                    }
+                    setGraphic(cellLayout);
+                }
+            }
+        });
+
+        column.getChildren().add(songListView);
         return column;
-    }
-
-    private void addSongItemToGrid(GridPane grid, int rowIndex, String songTitle, String artistDuration, String albumTitle) {
-        StackPane thumbnail = new StackPane();
-        thumbnail.setPrefSize(50, 50);
-        thumbnail.getStyleClass().add("song-thumbnail");
-        Label thumbIcon = new Label("🎵");
-        thumbIcon.setStyle("-fx-font-size: 24px; -fx-text-fill: " + TEXT_MEDIUM_GRAY + ";");
-        thumbnail.getChildren().add(thumbIcon);
-        
-        VBox songInfo = new VBox(2);
-        Label title = new Label(songTitle);
-        title.getStyleClass().add("song-title");
-        Label artist = new Label(artistDuration);
-        artist.getStyleClass().add("song-artist");
-        songInfo.getChildren().addAll(title, artist);
-
-        Label album = new Label(albumTitle);
-        album.getStyleClass().add("song-album");
-
-        HBox rowContainer = new HBox(10);
-        rowContainer.setAlignment(Pos.CENTER_LEFT);
-        rowContainer.setPadding(new Insets(5));
-        rowContainer.getStyleClass().add("song-list-item");
-        
-        rowContainer.getChildren().addAll(thumbnail, songInfo);
-        HBox.setHgrow(songInfo, Priority.ALWAYS);
-        rowContainer.getChildren().add(album);
-
-        grid.add(rowContainer, 0, rowIndex);
-        GridPane.setHgrow(rowContainer, Priority.ALWAYS);
     }
 
     private VBox createAlbumAndPlayerDetailColumn() {
@@ -299,27 +313,30 @@ public class HomeView {
         albumDetail.setAlignment(Pos.CENTER);
         albumDetail.setPadding(new Insets(0, 0, 20, 0));
 
-        Rectangle albumArt = new Rectangle(260, 260);
-        albumArt.getStyleClass().add("album-art");
+        albumArtImageView = new ImageView();
+        albumArtImageView.setFitWidth(260);
+        albumArtImageView.setFitHeight(260);
+        albumArtImageView.getStyleClass().add("album-art");
+        albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
 
-        Label albumTitle = new Label("Kota");
-        albumTitle.getStyleClass().add("album-title");
+        currentSongTitleLabel = new Label("No Song Playing");
+        currentSongTitleLabel.getStyleClass().add("album-title");
 
-        Label albumArtistDuration = new Label("Dere Cillian • 3:29");
-        albumArtistDuration.getStyleClass().add("album-artist-duration");
+        currentSongArtistLabel = new Label("");
+        currentSongArtistLabel.getStyleClass().add("album-artist-duration");
 
-        albumDetail.getChildren().addAll(albumArt, albumTitle, albumArtistDuration);
+        albumDetail.getChildren().addAll(albumArtImageView, currentSongTitleLabel, currentSongArtistLabel);
         column.getChildren().add(albumDetail);
 
         HBox playerControls = new HBox(15);
         playerControls.setAlignment(Pos.CENTER);
         playerControls.setPadding(new Insets(10));
         playerControls.getChildren().addAll(
-            createPlayerRoundButton("🔀"), // Shuffle (Unicode)
-            createPlayerRoundButton("⏮️"), // Previous (Unicode)
-            createPlayerRoundButton("▶️"), // Play (Unicode)
-            createPlayerRoundButton("⏭️"), // Next (Unicode)
-            createPlayerRoundButton("🔁")  // Repeat (Unicode)
+            createPlayerRoundButton("🔀"),
+            createPlayerRoundButton("⏮️"),
+            playPauseButton = createPlayerRoundButton("▶️"), // Assign to field
+            createPlayerRoundButton("⏭️"),
+            createPlayerRoundButton("🔁")
         );
         column.getChildren().add(playerControls);
 
@@ -371,14 +388,71 @@ public class HomeView {
         HBox centerControls = new HBox(20);
         centerControls.setAlignment(Pos.CENTER);
         centerControls.getChildren().addAll(
-            createPlayerRoundButton("🔀"), // Shuffle
-            createPlayerRoundButton("⏮️"), // Previous
-            createPlayerRoundButton("▶️"), // Play
-            createPlayerRoundButton("⏭️"), // Next
-            createPlayerRoundButton("🔁")  // Repeat
+            createPlayerRoundButton("🔀"),
+            createPlayerRoundButton("⏮️"),
+            createPlayerRoundButton("▶️"),
+            createPlayerRoundButton("⏭️"),
+            createPlayerRoundButton("🔁")
         );
 
         playerArea.getChildren().addAll(songProgressBar, timeLabels, centerControls);
         return playerArea;
+    }
+
+    private String formatDuration(int totalSeconds) {
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        return String.format("%d:%02d", minutes, seconds);
+    }
+    
+    public ListView<Song> getSongListView() {
+        return songListView;
+    }
+
+    public ListView<String> getGenreListView() {
+        return genreListView;
+    }
+
+    public TextField getSearchField() {
+        return searchField;
+    }
+
+    public Button getPlayPauseButton() {
+        return playPauseButton;
+    }
+
+    public void displaySongs(List<Song> songs) {
+        songListView.getItems().setAll(songs);
+    }
+
+    public void displayGenres(List<String> genres) {
+        genreListView.getItems().setAll(genres);
+    }
+
+    public void updateCurrentSongInfo(Song song) {
+        if (song != null) {
+            currentSongTitleLabel.setText(song.getTitle());
+            currentSongArtistLabel.setText(song.getArtist());
+            try {
+                // Pastikan path ke cover art benar: /images/namafile.jpg
+                albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/" + song.getCover())));
+            } catch (Exception e) {
+                System.err.println("Error loading album art for " + song.getTitle() + ": " + e.getMessage());
+                albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+            }
+        } else {
+            currentSongTitleLabel.setText("No Song Playing");
+            currentSongArtistLabel.setText("");
+            albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+        }
+    }
+
+    // --- Getter Tambahan untuk Konstanta (untuk HomeController) ---
+    public String getFontSizeLarge() {
+        return FONT_SIZE_LARGE;
+    }
+
+    public String getBgPrimaryDark() {
+        return BG_PRIMARY_DARK;
     }
 }
