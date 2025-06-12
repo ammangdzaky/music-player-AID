@@ -25,7 +25,7 @@ import java.util.ArrayList;
 public class HomeController {
     private HomeView view;
     private DataManager dataManager;
-    private MediaPlayer mediaPlayer;
+    private MediaPlayer mediaPlayer; // Mengubah ini menjadi non-static
     private Song currentPlayingSong;
 
     private boolean isShuffleOn = false;
@@ -122,6 +122,7 @@ public class HomeController {
     }
 
     private void initializeMediaPlayer(Song song) {
+        // Hanya panggil stop() dan dispose() jika mediaPlayer sudah ada dan sedang memutar
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.dispose();
@@ -135,6 +136,7 @@ public class HomeController {
 
             if (audioUrl == null) {
                 System.err.println("ERROR: File musik '" + resourcePathInClasspath + "' tidak ditemukan di classpath. Tidak dapat memutar lagu: " + song.getTitle());
+                mediaPlayer = null; // Set ke null jika tidak dapat memuat
                 return;
             }
 
@@ -152,7 +154,7 @@ public class HomeController {
             });
 
             mediaPlayer.currentTimeProperty().addListener((observable, oldValue, newValue) -> {
-                if (mediaPlayer.getMedia().getDuration() != Duration.UNKNOWN) {
+                if (mediaPlayer != null && mediaPlayer.getMedia().getDuration() != Duration.UNKNOWN) { // Pastikan mediaPlayer tidak null
                     double progress = newValue.toMillis() / mediaPlayer.getMedia().getDuration().toMillis();
                     view.updateProgressBar(progress);
                     view.updateCurrentTimeLabel(formatDuration((int)newValue.toSeconds()));
@@ -177,6 +179,7 @@ public class HomeController {
         } catch (Exception e) {
             System.err.println("Error menginisialisasi media player untuk " + song.getTitle() + ": " + e.getMessage());
             e.printStackTrace();
+            mediaPlayer = null; // Penting: Set mediaPlayer ke null jika ada error inisialisasi
         }
     }
 
@@ -191,7 +194,7 @@ public class HomeController {
                 currentPlayingSong = song;
                 view.updateCurrentSongInfo(currentPlayingSong);
                 initializeMediaPlayer(song);
-                if (mediaPlayer != null) {
+                if (mediaPlayer != null) { // Tambahkan pengecekan null di sini
                     mediaPlayer.play();
                 }
             }
@@ -199,7 +202,7 @@ public class HomeController {
     }
 
     public void togglePlayPause() {
-        if (mediaPlayer != null) {
+        if (mediaPlayer != null) { // Tambahkan pengecekan null di sini
             System.out.println("DEBUG: togglePlayPause dipanggil. Status saat ini: " + mediaPlayer.getStatus());
             if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
                 mediaPlayer.pause();
@@ -232,7 +235,7 @@ public class HomeController {
             playSong(nextSong);
             view.getSongListView().getSelectionModel().select(nextSong);
         } else {
-            System.out.println("DEBUG: Lagu saat ini tidak ditemukan di daftar, memutar dari awal atau shuffle.");
+            System.out.println("DEBUG: Lagu saat ini tidak ditemukan di daftar, memutar from awal atau shuffle.");
             if (!currentSongsList.isEmpty()) {
                 playSong(currentSongsList.get(0));
                 view.getSongListView().getSelectionModel().select(currentSongsList.get(0));
@@ -263,7 +266,7 @@ public class HomeController {
             playSong(previousSong);
             view.getSongListView().getSelectionModel().select(previousSong);
         } else {
-            System.out.println("DEBUG: Lagu saat ini tidak ditemukan di daftar, memutar dari awal atau shuffle.");
+            System.out.println("DEBUG: Lagu saat ini tidak ditemukan di daftar, memutar from awal atau shuffle.");
             if (!currentSongsList.isEmpty()) {
                 playSong(currentSongsList.get(0));
                 view.getSongListView().getSelectionModel().select(currentSongsList.get(0));
@@ -341,3 +344,4 @@ public class HomeController {
         return String.format("%d:%02d", minutes, seconds);
     }
 }
+

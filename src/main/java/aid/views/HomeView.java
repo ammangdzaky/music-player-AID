@@ -61,14 +61,14 @@ public class HomeView {
     private Label currentTimeLabel;
     private Label totalTimeLabel;
 
-    // Komponen untuk tombol kecepatan (diperbarui untuk 8 tombol)
-    private Button speed025xButton; // Baru
+    // Komponen untuk tombol kecepatan
+    private Button speed025xButton;
     private Button speed05xButton;
-    private Button speed075xButton; // Baru
+    private Button speed075xButton;
     private Button speed1xButton;
-    private Button speed125xButton; // Baru
+    private Button speed125xButton;
     private Button speed15xButton;
-    private Button speed175xButton; // Baru
+    private Button speed175xButton;
     private Button speed2xButton;
 
 
@@ -287,19 +287,21 @@ public class HomeView {
     private VBox createSimilarSongsColumn() {
         VBox column = new VBox(15);
         column.getStyleClass().addAll("content-card", "similar-songs-card");
-        column.setPadding(new Insets(20));
+        column.setPadding(new Insets(20)); // Kembali ke padding 20px default content-card
 
         HBox header = new HBox();
-        Label title = new Label("Lagu Serupa");
+        Label title = new Label("DAFTAR LAGU"); // Mengganti "Lagu Serupa" menjadi "DAFTAR LAGU" (UPPERCASE)
         title.getStyleClass().add("card-title");
         header.getChildren().add(title);
-        header.setAlignment(Pos.CENTER_LEFT);
+        header.setAlignment(Pos.CENTER); // Menempatkan teks di tengah
         header.setPadding(new Insets(0, 0, 10, 0));
 
         column.getChildren().add(header);
 
         songListView = new ListView<>();
         songListView.getStyleClass().add("song-list");
+        VBox.setVgrow(songListView, Priority.ALWAYS); // Memastikan ListView mengisi sisa ruang vertikal di dalam card
+
         songListView.setCellFactory(param -> new javafx.scene.control.ListCell<Song>() {
             private final HBox cellLayout = new HBox(10);
             private final ImageView songAlbumArt = new ImageView();
@@ -477,9 +479,9 @@ public class HomeView {
             speed025xButton, speed05xButton, speed075xButton, speed1xButton,
             speed125xButton, speed15xButton, speed175xButton, speed2xButton
         );
-        HBox.setHgrow(speedControlsContainer, Priority.ALWAYS);
+        HBox.setHgrow(speedControlsContainer, Priority.ALWAYS); 
         // Mengatur margin atas untuk container tombol kecepatan
-        VBox.setMargin(speedControlsContainer, new Insets(10, 0, 0, 0)); // Padding atas 10px
+        VBox.setMargin(speedControlsContainer, new Insets(10, 0, 0, 0)); 
 
         playerArea.getChildren().addAll(songProgressBar, timeLabels, speedControlsContainer);
         return playerArea;

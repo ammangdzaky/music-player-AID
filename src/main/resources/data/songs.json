@@ -17,7 +17,7 @@
     "genre": "R&B",
     "durationSeconds": 217,
     "file": "NIKI - Did You Like Her In The Morning.wav",
-    "cover": "coverKota.jpg"
+    "cover": "coverDidYouLikeHereInTheMorning.jpg"
   },
   {
     "id": 3,
@@ -27,7 +27,7 @@
     "genre": "Pop",
     "durationSeconds": 237,
     "file": "TULUS - Jatuh Suka.wav",
-    "cover": "coverKota.jpg"
+    "cover": "jatuhSuka.jpeg"
   },
   {
     "id": 4,
@@ -37,7 +37,7 @@
     "genre": "Pop",
     "durationSeconds": 218,
     "file": "TULUS - Langit Abu-abu.wav",
-    "cover": "coverKota.jpg"
+    "cover": "langitAbu-abu.jpeg"
   },
   {
     "id": 5,
@@ -47,7 +47,7 @@
     "genre": "Folk",
     "durationSeconds": 336,
     "file": "Usik - Feby Putri.wav",
-    "cover": "coverKota.jpg"
+    "cover": "usik.jpeg"
   },
   {
     "id": 6,
@@ -57,6 +57,26 @@
     "genre": "R&B",
     "durationSeconds": 283,
     "file": "NIKI - Backburner.wav",
-    "cover": "coverKota.jpg"
+    "cover": "Backburner2.jpeg"
+  },
+  {
+    "id": 7,
+    "title": "Merry Go Round of Life",
+    "artist": "Joe Hisaishi",
+    "album": "Howl’s Moving Castle Original Soundtrack",
+    "genre": "Classical",
+    "durationSeconds": 312,
+    "file": "Joe Hisaishi - Merry Go Round of Life.wav",
+    "cover": "MerryGoRoundCover.jpg"
+  },
+  {
+    "id": 8,
+    "title": "A Little Piece Of Heaven",
+    "artist": "Avenged Sevenfold",
+    "album": "Avenged Sevenfold (2007)",
+    "genre": "Metal",
+    "durationSeconds": 492,
+    "file": "Avenged Sevenfold - A Little Piece Of Heaven.wav",
+    "cover": "aLittlePeaceCover.jpg"
   }
 ]
