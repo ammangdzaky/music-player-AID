@@ -1,0 +1,50 @@
+.root {
+    -fx-background-color: #F6E710; /* kuning */
+    -fx-font-family: 'Arial';
+}
+
+.label {
+    -fx-text-fill: #ba9c07;
+    -fx-font-size: 16px;
+}
+
+.text-field, .password-field {
+    -fx-background-color: #ededed;
+    -fx-text-fill: #232323;
+    -fx-border-color: transparent;
+    -fx-background-radius: 25;
+    -fx-border-radius: 25;
+    -fx-padding: 10 20;
+    -fx-font-size: 16px;
+    -fx-max-width: 300px;
+}
+
+.button {
+    -fx-background-color: #DCB708;
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+    -fx-pref-width: 300px;
+    -fx-max-width: 300px;
+    -fx-font-size: 20px;
+    -fx-background-radius: 25;
+    -fx-border-radius: 25;
+}
+
+.container {
+    -fx-background-color: white;
+    -fx-background-radius: 35;
+    -fx-padding: 30;
+    -fx-effect: dropshadow(gaussian, #ccc, 10, 0, 0, 2);
+    -fx-max-width: 350px;
+    -fx-max-height: 350px;
+}
+
+.link-label {
+    -fx-text-fill: #000000;
+    -fx-underline: true;
+    -fx-cursor: hand;
+    -fx-font-size: 15px;
+}
+.link-label:hover {
+    -fx-text-fill: #ba9c07;
+}
