@@ -12,7 +12,7 @@
     "title": "Did You Like Her in the Morning?",
     "artist": "Niki",
     "file": "songs/NIKI - Did You Like Her In The Morning.wav",
-    "cover": "images/coverKota.jpg"
+    "cover": "images/coverDidYouLikeHereInTheMorning.jpg"
   },
 
   {
@@ -20,7 +20,7 @@
     "title": "Jatuh Suka",
     "artist": "Tulus",
     "file": "songs/TULUS - Jatuh Suka.wav",
-    "cover": "images/coverKota.jpg"
+    "cover": "images/jatuhSuka.jpeg"
   },
 
   {
@@ -28,7 +28,7 @@
     "title": "Langit Abu-Abu",
     "artist": "Tulus",
     "file": "songs/TULUS - Langit Abu-abu.wav",
-    "cover": "images/coverKota.jpg"
+    "cover": "images/langitAbu-abu.jpeg"
   },
 
   {
@@ -36,13 +36,13 @@
     "title": "Usik",
     "artist": "Feby Putri",
     "file": "songs/Usik - Feby Putri.wav",
-    "cover": "images/coverKota.jpg"
+    "cover": "images/usik.jpeg"
   },
   {
     "id": 6,
     "title": "Backburner",
     "artist": "NIKI",
     "file": "songs/NIKI - Backburner.wav",
-    "cover": "images/coverKota.jpg"
+    "cover": "images/Backburner2.jpeg"
   }
 ]
