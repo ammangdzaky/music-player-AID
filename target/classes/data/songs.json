@@ -3,10 +3,9 @@
     "id": 1,
     "title": "Kota",
     "artist": "Dere",
-    "file": "songs/kota.wav",
+     "file": "songs/kota.wav",
     "cover": "images/coverKota.jpg"
   },
-
   {
     "id": 2,
     "title": "Did You Like Her in the Morning?",
@@ -43,6 +42,19 @@
     "title": "Backburner",
     "artist": "NIKI",
     "file": "songs/NIKI - Backburner.wav",
-    "cover": "images/Backburner2.jpeg"
+    "cover": "images/Backburner2.jpeg",
+    "file": "songs/kota.mp3"
+  },
+  {
+    "id": 2,
+    "title": "Lagu Dua",
+    "artist": "Artis B",
+    "file": "songs/kota.mp3"
+  },
+  {
+    "id": 3,
+    "title": "Lagu Tiga",
+    "artist": "Artis C",
+    "file": "songs/kota.mp3"
   }
 ]
