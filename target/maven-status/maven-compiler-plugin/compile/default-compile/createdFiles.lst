@@ -1,0 +1,9 @@
+aid\models\User.class
+aid\utils\Validator.class
+aid\controllers\LoginController.class
+aid\utils\IDGenerator.class
+aid\managers\DataManager.class
+aid\views\LoginView.class
+aid\controllers\ProfileController.class
+aid\managers\SceneManager.class
+aid\controllers\HomeController.class
