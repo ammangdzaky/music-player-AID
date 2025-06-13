@@ -9,10 +9,17 @@ AID (Audio Interface Delight) adalah aplikasi pemutar musik berbasis JavaFX yang
 * 💾 Penyimpanan data menggunakan file JSON
 * 🌙 Tema warna hitam dan kuning yang bersahabat
 
-## 🔎 Implementasi OOP
-isiiiiiii
+## 🔎 Implementasi OOP BLOM FIX
+### 1. Encapsulation
+*
+### 2. Inheritance (Pewarisan)
+*
+### 3. Abstraction
+*
+### 4. Polymorphism
+*
 
-## 📁 Struktur Folder
+## 📁 Struktur Folder BLOM FIX
 ```bash
 music-player-AID/
 ├── src/
@@ -34,14 +41,13 @@ music-player-AID/
 ```
 
 ## 🔧 Cara Menjalankan (via Maven)
-1. Pastikan Java & Maven sudah terinstal
-2. Clone repositori:
+### 1. Pastikan Java & Maven sudah terinstal
+### 2. Clone repositori:
 ```bash
 git clone https://github.com/username/music-player-AID.git
 cd music-player-AID
 ```
-
-3. Jalankan via Maven:
+### 3. Jalankan via Maven:
 ```bash
 mvn clean javafx:run
 atau
