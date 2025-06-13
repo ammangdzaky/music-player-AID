@@ -1,79 +1,116 @@
 # 🎵 AID Music Player
-AID adalah aplikasi pemutar musik berbasis JavaFX yang dirancang untuk memberikan pengalaman mendengarkan musik yang sederhana, elegan, dan personal. Aplikasi ini dibangun dengan pendekatan modular berorientasi objek (OOP) dan cocok sebagai proyek pembelajaran maupun hiburan.
 
-## 📌 Fitur Utama
-* 👤 Autentikasi pengguna (Sign Up & Login)
-* 🎶 Pemutaran lagu dari file lokal
-* 📂 Pembuatan playlist pengguna secara privat
-* 🎨 Tampilan visual interaktif dengan JavaFX
-* 💾 Penyimpanan data menggunakan file JSON
-* 🌙 Tema warna hitam dan kuning yang bersahabat
-
-## 🔎 Implementasi OOP BLOM FIX
-
-Proyek ini menerapkan empat pilar utama OOP untuk mencapai desain yang bersih, mudah dipelihara, dan skalabel.
-
-### 1. Enkapsulasi
-- Semua field data dalam model seperti `User `, `Song`, dan `Playlist` bersifat privat atau terlindungi.
-- Akses ke field ini dikendalikan melalui metode getter dan setter publik.
-- Mengontrol akses langsung ke data kelas dan menjaga integritas.
-- Contoh:  
-  Kelas `User ` mengenkapsulasi data pengguna seperti nama pengguna, kata sandi, dan path gambar profil dengan getter dan setter.
-
-### 2. Pewarisan
-- Kelas mewarisi fitur dan perilaku umum dari kelas induk, mempromosikan penggunaan kembali kode dan hierarki.
-- Contoh:  
-  Kelas `HomeView` menyesuaikan perilaku dari `ListCell<Song>` dengan mengoverride metode `updateItem(Song item, boolean empty)` dan memanggil `super.updateItem(item, empty);` untuk mempertahankan logika pembaruan dasar sebelum menambahkan pembaruan UI khusus. Ini menunjukkan penggunaan pewarisan di mana subclass memperluas dan memodifikasi perilaku superclass-nya.
-
-### 3. Abstraksi
-- Kelas abstrak dan antarmuka digunakan untuk menyembunyikan detail implementasi internal dan hanya mengekspos fungsionalitas yang diperlukan.
-- Contoh:  
-  Kelas `Playlist` adalah kelas abstrak yang mendefinisikan perilaku umum seperti `addSong()` dan `removeSong()`, yang diimplementasikan secara berbeda oleh subclass seperti `StandardPlaylist` dan `SmartPlaylist`.
-
-### 4. Polimorfisme
-- Metode dengan nama yang sama berperilaku berbeda tergantung pada objek yang memanggilnya.
-- Contoh:  
-  Metode `addSong()` diimplementasikan secara berbeda dalam `StandardPlaylist` dan `SmartPlaylist`, memungkinkan jenis playlist untuk memperluas atau membatasi cara lagu dikelola.
+**AID (Audio Interface Delight)** adalah aplikasi pemutar musik berbasis **JavaFX** yang dirancang untuk memberikan pengalaman mendengarkan musik yang sederhana, elegan, dan personal. Aplikasi ini dibangun dengan pendekatan **modular berorientasi objek (OOP)**, cocok sebagai proyek pembelajaran maupun hiburan.
 
 ---
 
-## 📁 Struktur Folder BLOM FIX
+## 📌 Fitur Utama
+
+- 👤 **Autentikasi Pengguna**  
+  Sistem *Sign Up* dan *Login* untuk manajemen akun pengguna.
+
+- 🎶 **Pemutaran Lagu Lokal**  
+  Memutar lagu dari file audio yang disimpan secara lokal.
+
+- 📂 **Manajemen Playlist**  
+  - **Standard Playlist**: Pengguna dapat membuat playlist dan menambahkan lagu secara manual.  
+  - **Smart Playlist**: Mengisi lagu secara otomatis berdasarkan kriteria tertentu (misalnya genre).  
+  - Semua playlist disimpan permanen dan terhubung dengan akun pengguna.
+
+- 🎨 **Antarmuka Visual Interaktif**  
+  Antarmuka responsif dan menarik dengan JavaFX.
+
+- 💾 **Penyimpanan Data Persisten**  
+  Menggunakan file JSON untuk menyimpan data pengguna, profil, dan playlist.
+
+- 🌙 **Tema Estetika Modern**  
+  Skema warna hitam dan kuning yang nyaman di mata.
+
+- ⏩ **Kontrol Pemutaran Lengkap**  
+  Play, pause, next, previous, acak, ulangi, dan kontrol kecepatan.
+
+- 🔊 **Kontrol Volume & Progres**  
+  Slider volume dan progress bar interaktif.
+
+- 🔎 **Pencarian & Filter Lagu**  
+  Cari lagu berdasarkan judul atau filter berdasarkan genre.
+
+---
+
+## 🔎 Implementasi OOP
+
+### 1. 🛡️ Encapsulation (Enkapsulasi)
+
+- Data seperti `userName`, `password`, `title`, `artist` bersifat `private`.
+- Akses melalui `getter` dan `setter` yang terkontrol.
+- Kelas `DataManager` menyembunyikan detail penyimpanan dan pengambilan data JSON.
+
+### 2. 🧬 Inheritance (Pewarisan)
+
+- `Playlist` sebagai kelas abstrak dengan properti dan metode umum.
+- `StandardPlaylist` dan `SmartPlaylist` mewarisi dan mengimplementasikan metode spesifik.
+
+### 3. 🎭 Abstraction (Abstraksi)
+
+- `Playlist` bertindak sebagai antarmuka umum yang memungkinkan bagian lain dari aplikasi tidak perlu tahu implementasi detailnya.
+- Fokus pada **"apa" yang dilakukan** bukan **"bagaimana" caranya**.
+
+### 4. 🌀 Polymorphism (Polimorfisme)
+
+- Objek `playlists` dapat berisi `StandardPlaylist` dan `SmartPlaylist`.
+- Metode yang dipanggil disesuaikan secara otomatis berdasarkan tipe aktual objek saat runtime.
+- `PlaylistTypeAdapter` mendukung serialisasi dan deserialisasi objek turunan dari `Playlist` dengan tepat saat menyimpan/memuat JSON.
+
+---
+
+## 📁 Struktur Folder
+
 ```bash
 music-player-AID/
 ├── src/
 │   ├── main/
 │   │   ├── java/aid/
-│   │   │   ├── controllers/       # LoginController, RegisterController, dsb
-│   │   │   ├── managers/          # DataManager, SceneManager
-│   │   │   ├── models/            # User, Song, Playlist, SmartPlaylist, dst.
-│   │   │   ├── utils/             # Validator, IDGenerator
-│   │   │   ├── views/             # LoginView, HomeView, ProfileView
-│   │   │   └── Main.java          # Entry point aplikasi
+│   │   │   ├── controllers/        # Controller: Login, Register, Home, Profile
+│   │   │   ├── managers/           # Manajer: DataManager, SceneManager, TypeAdapter
+│   │   │   ├── models/             # Model: User, Song, Playlist (dan turunannya)
+│   │   │   ├── utils/              # Utilitas: IDGenerator, Validator, SongUtils
+│   │   │   ├── views/              # Tampilan UI: LoginView, HomeView, dll.
+│   │   │   └── Main.java           # Titik masuk aplikasi JavaFX
 │   │   └── resources/
-│   │       ├── styles/style.css   # CSS styling
-│   │       └── images/            # Aset visual (logo, default avatar)
-│   │       └── songs/             # Folder untuk lagu-lagu lokal
-│   │       └── data/              # File JSON untuk persistensi
-├── pom.xml                        # Konfigurasi Maven
-└── README.md
+│   │       ├── styles/             # CSS kustomisasi tampilan
+│   │       ├── images/             # Gambar album, avatar, ikon
+│   │       ├── songs/              # File audio lokal (.wav, .mp3)
+│   │       └── data/               # File JSON untuk penyimpanan data
+├── pom.xml                         # Konfigurasi Maven: dependensi dan build
+└── README.md                       # Dokumentasi proyek (file ini)
 ```
 
-## 🔧 Cara Menjalankan (via Maven)
-### 1. Pastikan Java & Maven sudah terinstal
-### 2. Clone repositori:
-```bash
-git clone https://github.com/username/music-player-AID.git
-cd music-player-AID
-```
-### 3. Jalankan via Maven:
-```bash
-mvn clean javafx:run
-atau
-.\mvnw clean
-.\mvnw javafx:run
-```
+---
 
-## 👥 Anggota Tim dan pembagian tugas
-* Azizah Nurul Izzah (Login dan Sign up)
-* Indira Ramayani (Profil Pengguna)
-* Abdurrahman Dzaky (Menu/halaman utama)
+## 🚀 Cara Menjalankan Proyek (via Maven)
+
+1. Pastikan sudah menginstal **Java JDK 17+** dan **Apache Maven**.
+2. Clone repositori:
+   ```bash
+   git clone https://github.com/username/music-player-AID.git
+   cd music-player-AID
+   ```
+   Ganti `username` dengan akun GitHub Anda.
+
+3. Jalankan aplikasi dengan perintah:
+   ```bash
+   mvn clean javafx:run
+   ```
+   > Jika menggunakan Windows dan `mvn` belum ada di PATH, gunakan:
+   ```bash
+   .\mvnw clean
+   .\mvnw javafx:run
+   ```
+
+---
+
+## 👥 Anggota Tim
+
+- Azizah Nurul Izzah (Login dan Sign up)
+- Indira Ramayani (Profil Pengguna)
+- Abdurrahman Dzaky Safrullah (Menu atau halaman utama)
