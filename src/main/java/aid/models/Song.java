@@ -21,6 +21,7 @@ public class Song {
         this.cover = cover;
     }
 
+    // Getter methods
     public int getId() { return id; }
     public String getTitle() { return title; }
     public String getArtist() { return artist; }
@@ -30,6 +31,10 @@ public class Song {
     public String getFile() { return file; }
     public String getCover() { return cover; }
 
+    // Setter methods (jika Anda butuhkan untuk mengubah nilai setelah inisialisasi)
+    public void setId(int id) { this.id = id; }
+    public void setTitle(String title) { this.title = title; }
+    public void setArtist(String artist) { this.artist = artist; }
     public void setAlbum(String album) { this.album = album; }
     public void setGenre(String genre) { this.genre = genre; }
     public void setDurationSeconds(int durationSeconds) { this.durationSeconds = durationSeconds; }
@@ -38,15 +43,6 @@ public class Song {
 
     @Override
     public String toString() {
-        return "Song{" +
-               "id=" + id +
-               ", title='" + title + '\'' +
-               ", artist='" + artist + '\'' +
-               ", album='" + album + '\'' +
-               ", genre='" + genre + '\'' +
-               ", durationSeconds=" + durationSeconds +
-               ", file='" + file + '\'' +
-               ", cover='" + cover + '\'' +
-               '}';
+        return getTitle() + " by " + getArtist();
     }
 }

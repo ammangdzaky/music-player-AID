@@ -46,5 +46,12 @@
     "nickName": "@coulde",
     "password": "12345678",
     "profileImagePath": "/images/default_avatar.jpg"
+  },
+  {
+    "userName": "a",
+    "nickName": "a",
+    "password": "a",
+    "profileImagePath": "/images/default_avatar.jpg",
+    "playlists": []
   }
 ]

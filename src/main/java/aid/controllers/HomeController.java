@@ -2,6 +2,7 @@ package aid.controllers;
 
 import aid.views.HomeView;
 import aid.models.Song;
+import aid.models.User; // Import User model
 import aid.managers.DataManager;
 
 import javafx.scene.media.Media;
@@ -9,6 +10,7 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Label;
+import javafx.stage.Stage; // Import Stage
 import javafx.util.Duration;
 
 import java.io.File;
@@ -23,18 +25,23 @@ import java.util.Collections;
 import java.util.ArrayList;
 
 public class HomeController {
+    private Stage stage; // Tambahkan field stage
+    private User loggedInUser; // Tambahkan field untuk user yang login
     private HomeView view;
     private DataManager dataManager;
-    private MediaPlayer mediaPlayer; 
+    private MediaPlayer mediaPlayer;
     private Song currentPlayingSong;
 
     private boolean isShuffleOn = false;
     private boolean isRepeatOn = false;
     private List<Song> shuffledSongs;
 
-    public HomeController(HomeView view) {
-        this.view = view;
-        this.dataManager = new DataManager();
+    // Modifikasi konstruktor untuk menerima Stage dan User
+    public HomeController(Stage stage, User user) {
+        this.stage = stage;
+        this.loggedInUser = user;
+        this.view = new HomeView(stage); // HomeView perlu akses ke stage
+        this.dataManager = new DataManager(); // Asumsi DataManager tidak perlu stage/user
 
         // Mengatur callback seeking dari View ke Controller
         this.view.setSeekCallback(progress -> {
@@ -54,7 +61,23 @@ public class HomeController {
                 mediaPlayer.setVolume(newValue.doubleValue() / 100.0);
             }
         });
+
+        // Panggil setupEventHandlers setelah view dibuat dan diinisialisasi
+        setupEventHandlers();
+
+        // Load data awal
+        loadSongsAndGenres();
+        loadInitialPlayerInfo();
     }
+
+    // Metode untuk menampilkan HomeView
+    public void show() {
+        stage.setScene(view.getScene());
+        stage.setTitle("AID Music Player - Home");
+        stage.setFullScreen(true);
+        stage.show();
+    }
+
 
     public void loadSongsAndGenres() {
         List<Song> allSongs = dataManager.getSongs();
@@ -101,13 +124,23 @@ public class HomeController {
             filterSongs(newValue);
         });
 
-        // Menambahkan event handler untuk Home Button
+        // Menambahkan event handler untuk Home Button (di HomeView, tombol "🏠")
+        // ini bukan kembali ke Login, ini untuk "reset" filter di Home
         view.getHomeButton().setOnAction(event -> {
             System.out.println("DEBUG: Home button clicked. Displaying all songs.");
             view.displaySongs(dataManager.getSongs());
-            // Opsional: hapus seleksi genre jika ada
             view.getGenreListView().getSelectionModel().clearSelection();
+            view.getSearchField().clear(); // Reset search field juga
         });
+        
+        // --- Perubahan di sini: Menambahkan handler untuk tombol "Profile" (👤) ---
+        // Asumsi ada getter untuk tombol profile di HomeView
+        view.getProfileButton().setOnAction(event -> {
+            System.out.println("DEBUG: Profile button clicked. Navigating to Profile Scene.");
+            ProfileController profileController = new ProfileController(stage, loggedInUser);
+            profileController.show();
+        });
+        // --- AKHIR PERUBAHAN ---
 
 
         view.getGenreListView().setOnMouseClicked(event -> {

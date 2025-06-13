@@ -28,6 +28,8 @@ public class RegisterController {
     private void initialize() {
         FileChooser fileChooser = new FileChooser();
         view.uploadBtn.setOnAction(e -> {
+            fileChooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("Gambar", "*.png", "*.jpg", "*.jpeg"));
             File file = fileChooser.showOpenDialog(stage);
             if (file != null) {
                 try {
@@ -68,7 +70,7 @@ public class RegisterController {
                 return;
             }
 
-            if (!view.nickField.getText().isEmpty() && !view.fullField.getText().isEmpty()) {
+            if (!view.nickField.getText().isEmpty() && !view.fullField.getText().isEmpty() && !view.passField.getText().isEmpty()) {
                 String profilePath;
                 if (profileImage != null && profileExt != null) {
                     // Simpan path relatif ke folder resources, sesuai ekstensi upload
@@ -96,6 +98,7 @@ public class RegisterController {
     public void show() {
         stage.setScene(view.getScene());
         stage.setTitle("AID - Sign up");
+        stage.setFullScreen(true); // Pastikan fullscreen untuk register juga
         stage.show();
     }
 }

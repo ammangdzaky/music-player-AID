@@ -15,29 +15,31 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.GridPane; // Tidak digunakan, bisa dihapus
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
+import javafx.scene.paint.Color; // Tidak digunakan, bisa dihapus
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Rectangle; // Tidak digunakan, bisa dihapus
 import javafx.stage.Stage;
 import javafx.scene.input.KeyCode;
 import javafx.util.Duration;
 
-import org.controlsfx.control.Notifications;
-import animatefx.animation.*;
+import org.controlsfx.control.Notifications; // Import ini mungkin tidak digunakan lagi, bisa dihapus jika tidak ada notifikasi ControlsFX
+import animatefx.animation.*; // Import ini mungkin tidak digunakan lagi jika hanya Shake/Tada
 
 import aid.models.Song;
 
+import java.io.InputStream;
 import java.util.List;
 
 public class HomeView {
 
     private Stage stage;
+    private Scene scene; // <-- PASTIKAN DEKLARASI INI ADA
 
     private ListView<Song> songListView;
     private ListView<String> genreListView;
@@ -73,6 +75,9 @@ public class HomeView {
 
     // Tombol Home (Dideklarasikan di sini)
     private Button homeButton;
+    // --- PERUBAHAN DI SINI: Deklarasi tombol profil ---
+    private Button profileButton;
+    // --- AKHIR PERUBAHAN ---
 
 
     // Callback untuk controller (akan diatur oleh HomeController)
@@ -96,6 +101,7 @@ public class HomeView {
     private static final String BORDER_RADIUS_LG = "15px";
 
 
+    // Modifikasi konstruktor untuk menerima Stage
     public HomeView(Stage stage) {
         this.stage = stage;
         initializeUI();
@@ -142,15 +148,16 @@ public class HomeView {
         StackPane.setAlignment(messageBox, Pos.TOP_CENTER);
         StackPane.setMargin(messageBox, new Insets(20, 0, 0, 0));
 
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
-        scene.getStylesheets().add(getClass().getResource("/styles/homeStyle.css").toExternalForm());
+        // <--- PERBAIKAN DI SINI: Tetapkan Scene ke field kelas 'scene'
+        this.scene = new Scene(root, 1024, 768);
+        this.scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
+        this.scene.getStylesheets().add(getClass().getResource("/styles/homeStyle.css").toExternalForm());
 
-        stage.setTitle("AID Music Player - Home");
-        stage.setScene(scene);
+        // stage.setTitle("AID Music Player - Home"); // Akan diatur oleh HomeController
+        // stage.setScene(scene); // Akan diatur oleh HomeController
 
-        stage.setFullScreen(true);
-        stage.setFullScreenExitHint("");
+        // stage.setFullScreen(true); // Akan diatur oleh HomeController
+        stage.setFullScreenExitHint(""); // Biarkan ini
 
         scene.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
@@ -159,7 +166,12 @@ public class HomeView {
             }
         });
 
-        stage.show();
+        // stage.show(); // Akan diatur oleh HomeController
+    }
+
+    // <--- PERBAIKAN DI SINI: Tambahkan metode getScene()
+    public Scene getScene() {
+        return this.scene;
     }
 
     private HBox createHeader() {
@@ -174,9 +186,13 @@ public class HomeView {
         // Inisialisasi homeButton di sini
         homeButton = createIconButton("🏠", FONT_SIZE_XLARGE, TEXT_LIGHT); 
         
+        // --- PERUBAHAN DI SINI: Inisialisasi tombol profil ---
+        profileButton = createIconButton("👤", FONT_SIZE_XLARGE, TEXT_LIGHT);
+        // --- AKHIR PERUBAHAN ---
+
         leftNavIcons.getChildren().addAll(
             homeButton, // Menambahkan homeButton
-            createIconButton("👤", FONT_SIZE_XLARGE, TEXT_LIGHT)
+            profileButton // Menambahkan tombol profil
         );
         leftNavIcons.getChildren().forEach(node -> {
             if (node instanceof Button) {
@@ -189,7 +205,7 @@ public class HomeView {
 
         ImageView appLogoImageView = null;
         try {
-            appLogoImageView = new ImageView(new Image(getClass().getResourceAsStream("/images/Logo2.jpg")));
+            appLogoImageView = new ImageView(new Image(getClass().getResourceAsStream("/images/Logo2.jpg"))); // Pastikan path benar
             appLogoImageView.setFitWidth(200);
             appLogoImageView.setFitHeight(60);
             appLogoImageView.setPreserveRatio(true);
@@ -262,6 +278,8 @@ public class HomeView {
         return sidebar;
     }
 
+    // Metode createGenreButton tidak dipanggil di HomeView, mungkin di controller atau di tempat lain?
+    // Jika tidak digunakan, bisa dihapus atau diabaikan.
     private Button createGenreButton(String text) {
         Button button = new Button(text);
         button.setPrefWidth(160);
@@ -347,7 +365,14 @@ public class HomeView {
                     albumLabel.setText(song.getAlbum());
 
                     try {
-                        songAlbumArt.setImage(new Image(getClass().getResourceAsStream("/images/" + song.getCover())));
+                        // Menggunakan getCover()
+                        InputStream coverStream = getClass().getResourceAsStream("/images/" + song.getCover());
+                        if (coverStream != null) {
+                            songAlbumArt.setImage(new Image(coverStream));
+                        } else {
+                            System.err.println("Error loading cover art for " + song.getTitle() + ": /images/" + song.getCover() + " not found.");
+                            songAlbumArt.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+                        }
                     } catch (Exception e) {
                         System.err.println("Error loading cover art for " + song.getTitle() + ": " + e.getMessage());
                         songAlbumArt.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
@@ -374,7 +399,11 @@ public class HomeView {
         albumArtImageView.setFitWidth(260);
         albumArtImageView.setFitHeight(260);
         albumArtImageView.getStyleClass().add("album-art");
-        albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+        try {
+            albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+        } catch (Exception e) {
+            System.err.println("Error loading default_album_art.png: " + e.getMessage());
+        }
 
         currentSongTitleLabel = new Label("No Song Playing");
         currentSongTitleLabel.getStyleClass().add("album-title");
@@ -603,6 +632,10 @@ public class HomeView {
     // Menambahkan getter untuk Home Button
     public Button getHomeButton() { return homeButton; }
 
+    // --- PERUBAHAN DI SINI: Getter untuk tombol profil ---
+    public Button getProfileButton() { return profileButton; }
+    // --- AKHIR PERUBAHAN ---
+
 
     public void displaySongs(List<Song> songs) {
         songListView.getItems().setAll(songs);
@@ -619,7 +652,14 @@ public class HomeView {
             currentSongArtistLabel.setText(song.getArtist());
             // Logika nowPlayingMiniLabel dihapus
             try {
-                albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/" + song.getCover())));
+                // Menggunakan getCover()
+                InputStream coverStream = getClass().getResourceAsStream("/images/" + song.getCover());
+                if (coverStream != null) {
+                    albumArtImageView.setImage(new Image(coverStream));
+                } else {
+                    System.err.println("Error loading album art for " + song.getTitle() + ": /images/" + song.getCover() + " not found.");
+                    albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+                }
             } catch (Exception e) {
                 System.err.println("Error loading album art for " + song.getTitle() + ": " + e.getMessage());
                 albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
@@ -643,6 +683,12 @@ public class HomeView {
     // --- Metode untuk mengubah visual tombol Shuffle ---
     public void updateShuffleButtonVisual(boolean isOn) {
         // Tidak ada perubahan kelas CSS untuk shuffle, karena ikonnya selalu kuning
+        // Anda bisa menambahkan atau menghapus kelas CSS di sini jika ada efek visual yang berbeda
+        if (isOn) {
+            shuffleButton.getStyleClass().add("shuffle-button-active"); // Contoh kelas CSS
+        } else {
+            shuffleButton.getStyleClass().remove("shuffle-button-active");
+        }
     }
 
     // --- Metode untuk mengubah visual tombol Repeat ---
