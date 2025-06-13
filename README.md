@@ -9,6 +9,9 @@ AID (Audio Interface Delight) adalah aplikasi pemutar musik berbasis JavaFX yang
 * 💾 Penyimpanan data menggunakan file JSON
 * 🌙 Tema warna hitam dan kuning yang bersahabat
 
+## 🔎 Implementasi OOP
+isiiiiiii
+
 ## 📁 Struktur Folder
 ```bash
 music-player-AID/
