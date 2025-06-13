@@ -5,9 +5,8 @@ import java.util.List;
 
 public class StandardPlaylist extends Playlist {
 
-    // PASTIKAN KONSTRUKTOR INI ADA
     public StandardPlaylist(String id, String name, String ownerId, List<String> songIds) {
-        super(id, name, ownerId, songIds); // Memanggil konstruktor superclass Playlist
+        super(id, name, ownerId, songIds);
     }
 
     @Override

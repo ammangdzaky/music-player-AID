@@ -1,75 +1,81 @@
 package aid.utils;
 
 import aid.models.User;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import java.io.*;
-import java.lang.reflect.Type;
-import java.nio.file.*;
-import java.util.*;
+import aid.managers.DataManager;
+import java.util.List;
 
 public class UserDataUtil {
-    private static final String USER_FILE = "data/users.json";
-    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    // Gunakan DataManager sebagai satu-satunya sumber kebenasan untuk data
+    // Jangan inisialisasi langsung di sini. Biarkan null dan inisialisasi secara lazy.
+    private static DataManager dataManagerInstance; 
 
-    public static List<User> loadUsers() {
-        try {
-            if (!Files.exists(Paths.get(USER_FILE)))
-                return new ArrayList<>();
-            Reader reader = Files.newBufferedReader(Paths.get(USER_FILE));
-            Type listType = new TypeToken<List<User>>() {
-            }.getType();
-            List<User> users = gson.fromJson(reader, listType);
-            reader.close();
-            return users != null ? users : new ArrayList<>();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
+    // Constructor private untuk mencegah instansiasi
+    private UserDataUtil() {
+        // utility class
+    }
+
+    // Getter untuk DataManager instance dengan lazy initialization
+    public static DataManager getDataManager() {
+        if (dataManagerInstance == null) {
+            System.out.println("DEBUG: DataManager instance is null. Attempting lazy initialization.");
+            synchronized (UserDataUtil.class) { // Pastikan thread-safe jika ada multi-threading
+                if (dataManagerInstance == null) {
+                    try {
+                        dataManagerInstance = new DataManager();
+                        System.out.println("DEBUG: DataManager successfully lazy initialized.");
+                    } catch (Exception e) {
+                        System.err.println("CRITICAL ERROR: Failed to initialize DataManager. Application might be unstable.");
+                        e.printStackTrace();
+                        // Ini adalah titik kritis. Jika DataManager gagal diinisialisasi,
+                        // aplikasi mungkin tidak bisa berfungsi. Anda bisa memilih untuk
+                        // melemparkan RuntimeException atau menampilkan Alert di sini.
+                        throw new RuntimeException("Failed to load application data. Please check data files.", e);
+                    }
+                }
+            }
         }
+        return dataManagerInstance;
+    }
+
+    // Semua metode di bawah ini akan memanggil getDataManager() terlebih dahulu
+    
+    public static List<User> loadUsers() {
+        getDataManager().loadUsers();
+        return getDataManager().getUsers();
     }
 
     public static void updateUser(String oldUserName, User updatedUser) {
-        List<User> users = loadUsers();
-        for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).getUserName().equals(oldUserName)) {
-                users.set(i, updatedUser);
-                break;
-            }
+        User existingUser = getDataManager().getUserByUsername(oldUserName);
+        if (existingUser != null) {
+            existingUser.setUserName(updatedUser.getUserName());
+            existingUser.setNickName(updatedUser.getNickName());
+            existingUser.setProfileImagePath(updatedUser.getProfileImagePath());
+            existingUser.setPlaylists(updatedUser.getPlaylists());
+            getDataManager().updateUserInList(existingUser);
+        } else {
+            System.err.println("User with old username " + oldUserName + " not found for update.");
         }
-        saveUsers(users);
     }
 
-    public static void saveUsers(List<User> users) {
-        try (Writer writer = Files.newBufferedWriter(Paths.get(USER_FILE))) {
-            gson.toJson(users, writer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public static void saveUsers(List<User> users) { // Metode ini mungkin tidak lagi diperlukan
+        getDataManager().saveUsers(); 
     }
 
     public static void addUser(User user) {
-        List<User> users = loadUsers();
-        users.add(user);
-        saveUsers(users);
+        getDataManager().addUser(user);
     }
 
-    public static User findUser(String nickName, String password) {
-        for (User user : loadUsers()) {
-            if (user.getUserName().equals(nickName) && user.getPassword().equals(password)) {
-                return user;
-            }
+    public static User findUser(String userName, String password) {
+        getDataManager().loadUsers(); 
+        User foundUser = getDataManager().getUserByUsername(userName);
+        if (foundUser != null && foundUser.getPassword().equals(password)) {
+            return foundUser;
         }
         return null;
     }
 
     public static boolean isUsernameTaken(String userName) {
-        for (User user : loadUsers()) {
-            if (user.getUserName().equalsIgnoreCase(userName)) {
-                return true;
-            }
-        }
-        return false;
+        getDataManager().loadUsers();
+        return getDataManager().isUsernameTaken(userName);
     }
 }

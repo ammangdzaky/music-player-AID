@@ -15,21 +15,15 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane; // Tidak digunakan, bisa dihapus
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color; // Tidak digunakan, bisa dihapus
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle; // Tidak digunakan, bisa dihapus
 import javafx.stage.Stage;
 import javafx.scene.input.KeyCode;
 import javafx.util.Duration;
-
-import org.controlsfx.control.Notifications; // Import ini mungkin tidak digunakan lagi, bisa dihapus jika tidak ada notifikasi ControlsFX
-import animatefx.animation.*; // Import ini mungkin tidak digunakan lagi jika hanya Shake/Tada
 
 import aid.models.Song;
 
@@ -39,7 +33,7 @@ import java.util.List;
 public class HomeView {
 
     private Stage stage;
-    private Scene scene; // <-- PASTIKAN DEKLARASI INI ADA
+    private Scene scene;
 
     private ListView<Song> songListView;
     private ListView<String> genreListView;
@@ -75,9 +69,7 @@ public class HomeView {
 
     // Tombol Home (Dideklarasikan di sini)
     private Button homeButton;
-    // --- PERUBAHAN DI SINI: Deklarasi tombol profil ---
-    private Button profileButton;
-    // --- AKHIR PERUBAHAN ---
+    private Button profileButton; // Deklarasi tombol profil
 
 
     // Callback untuk controller (akan diatur oleh HomeController)
@@ -101,13 +93,11 @@ public class HomeView {
     private static final String BORDER_RADIUS_LG = "15px";
 
 
-    // Modifikasi konstruktor untuk menerima Stage
     public HomeView(Stage stage) {
         this.stage = stage;
         initializeUI();
     }
 
-    // Antarmuka callback untuk seeking
     public interface SeekCallback {
         void onSeek(double progress);
     }
@@ -133,7 +123,6 @@ public class HomeView {
         VBox playerControls = createPlayerControls();
         contentPane.setBottom(playerControls);
 
-        // Inisialisasi kotak pesan
         messageLabel = new Label();
         messageBox = new VBox(messageLabel);
         messageBox.getStyleClass().add("message-box");
@@ -141,23 +130,16 @@ public class HomeView {
         messageBox.setManaged(false);
         messageBox.setAlignment(Pos.CENTER);
 
-
-        // Buat StackPane sebagai root utama scene
         StackPane root = new StackPane();
         root.getChildren().addAll(contentPane, messageBox);
         StackPane.setAlignment(messageBox, Pos.TOP_CENTER);
         StackPane.setMargin(messageBox, new Insets(20, 0, 0, 0));
 
-        // <--- PERBAIKAN DI SINI: Tetapkan Scene ke field kelas 'scene'
         this.scene = new Scene(root, 1024, 768);
         this.scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
         this.scene.getStylesheets().add(getClass().getResource("/styles/homeStyle.css").toExternalForm());
 
-        // stage.setTitle("AID Music Player - Home"); // Akan diatur oleh HomeController
-        // stage.setScene(scene); // Akan diatur oleh HomeController
-
-        // stage.setFullScreen(true); // Akan diatur oleh HomeController
-        stage.setFullScreenExitHint(""); // Biarkan ini
+        stage.setFullScreenExitHint("");
 
         scene.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
@@ -165,11 +147,8 @@ public class HomeView {
                 showMessage("Keluar dari mode Full Screen.", "info");
             }
         });
-
-        // stage.show(); // Akan diatur oleh HomeController
     }
 
-    // <--- PERBAIKAN DI SINI: Tambahkan metode getScene()
     public Scene getScene() {
         return this.scene;
     }
@@ -183,16 +162,12 @@ public class HomeView {
         HBox leftNavIcons = new HBox(10);
         leftNavIcons.setAlignment(Pos.CENTER_LEFT);
         
-        // Inisialisasi homeButton di sini
         homeButton = createIconButton("🏠", FONT_SIZE_XLARGE, TEXT_LIGHT); 
-        
-        // --- PERUBAHAN DI SINI: Inisialisasi tombol profil ---
         profileButton = createIconButton("👤", FONT_SIZE_XLARGE, TEXT_LIGHT);
-        // --- AKHIR PERUBAHAN ---
 
         leftNavIcons.getChildren().addAll(
-            homeButton, // Menambahkan homeButton
-            profileButton // Menambahkan tombol profil
+            homeButton,
+            profileButton
         );
         leftNavIcons.getChildren().forEach(node -> {
             if (node instanceof Button) {
@@ -203,19 +178,30 @@ public class HomeView {
         Region spacerLeft = new Region();
         HBox.setHgrow(spacerLeft, Priority.ALWAYS);
 
-        ImageView appLogoImageView = null;
+        // --- PERUBAHAN DI SINI UNTUK LOGO HOME ---
+        ImageView logoHomeImageView = null;
         try {
-            appLogoImageView = new ImageView(new Image(getClass().getResourceAsStream("/images/Logo2.jpg"))); // Pastikan path benar
-            appLogoImageView.setFitWidth(200);
-            appLogoImageView.setFitHeight(60);
-            appLogoImageView.setPreserveRatio(true);
-            appLogoImageView.getStyleClass().add("app-logo-image");
+            // Memuat logoHome.png untuk posisi di lingkaran merah
+            InputStream logoHomeStream = getClass().getResourceAsStream("/images/Logo2.png");
+            if (logoHomeStream != null) {
+                logoHomeImageView = new ImageView(new Image(logoHomeStream));
+                logoHomeImageView.setFitWidth(150); // Sesuaikan ukuran sesuai kebutuhan
+                logoHomeImageView.setFitHeight(50); // Sesuaikan ukuran sesuai kebutuhan
+                logoHomeImageView.setPreserveRatio(true);
+            } else {
+                System.err.println("Warning: Logo2.png not found in resources.");
+                // Fallback ke label teks jika gambar tidak ditemukan
+                Label logoFallback = new Label("AID music");
+                logoFallback.setStyle("-fx-font-family: 'Arial Black', sans-serif; -fx-font-size: 20px; -fx-text-fill: #FFD700;");
+                logoHomeImageView = new ImageView(); // Bisa juga tambahkan logoFallback ke HBox
+            }
         } catch (Exception e) {
-            System.err.println("Error loading logo.jpg: " + e.getMessage());
+            System.err.println("Error loading Logo2.png: " + e.getMessage());
             Label logoFallback = new Label("AID music");
             logoFallback.setStyle("-fx-font-family: 'Arial Black', sans-serif; -fx-font-size: 20px; -fx-text-fill: #FFD700;");
-            appLogoImageView = new ImageView();
+            logoHomeImageView = new ImageView();
         }
+        // --- AKHIR PERUBAHAN LOGO HOME ---
 
         searchField = new TextField();
         searchField.setPromptText("Search...");
@@ -226,7 +212,8 @@ public class HomeView {
 
         Runnable performSearch = () -> {
             showMessage("Mencari: " + searchField.getText().trim(), "info");
-            new Shake(searchField).play();
+            // Animasi shake hanya jika AnimataFx diimpor dan digunakan
+            // new Shake(searchField).play(); 
         };
         searchButton.setOnAction(e -> performSearch.run());
         searchField.setOnAction(e -> performSearch.run());
@@ -240,11 +227,9 @@ public class HomeView {
         exitButton.setOnAction(e -> Platform.exit());
 
         header.getChildren().clear();
-        if (appLogoImageView != null) {
-            header.getChildren().addAll(leftNavIcons, spacerLeft, appLogoImageView, searchArea, exitButton);
-        } else {
-            header.getChildren().addAll(leftNavIcons, spacerLeft, searchArea, exitButton);
-        }
+        // --- PERUBAHAN SUSUNAN HEADER ---
+        header.getChildren().addAll(leftNavIcons, spacerLeft, searchArea, logoHomeImageView, exitButton); // Memindahkan logoHomeImageView ke kanan
+        // --- AKHIR PERUBAHAN SUSUNAN HEADER ---
 
         return header;
     }
@@ -268,7 +253,7 @@ public class HomeView {
         sidebar.getStyleClass().add("sidebar");
 
         Label genreTitle = new Label("Genre");
-        genreTitle.getStyleClass().add("genre-title");
+        genreTitle.getStyleClass().add("genre-title"); // CSS akan mengatur warna ke kuning
 
         genreListView = new ListView<>();
         genreListView.getStyleClass().add("genre-list");
@@ -278,8 +263,6 @@ public class HomeView {
         return sidebar;
     }
 
-    // Metode createGenreButton tidak dipanggil di HomeView, mungkin di controller atau di tempat lain?
-    // Jika tidak digunakan, bisa dihapus atau diabaikan.
     private Button createGenreButton(String text) {
         Button button = new Button(text);
         button.setPrefWidth(160);
@@ -289,7 +272,7 @@ public class HomeView {
 
         if (text.equals("POP")) {
             button.getStyleClass().add("genre-button-active");
-            new Tada(button).play();
+            // new Tada(button).play(); // AnimataFx
         }
         return button;
     }
@@ -312,13 +295,13 @@ public class HomeView {
     private VBox createSimilarSongsColumn() {
         VBox column = new VBox(15);
         column.getStyleClass().addAll("content-card", "similar-songs-card");
-        column.setPadding(new Insets(20)); // Kembali ke padding 20px default content-card
+        column.setPadding(new Insets(20));
 
         HBox header = new HBox();
-        Label title = new Label("DAFTAR LAGU"); // Mengganti "Lagu Serupa" menjadi "DAFTAR LAGU" (UPPERCASE)
-        title.getStyleClass().add("card-title");
+        Label title = new Label("DAFTAR LAGU");
+        title.getStyleClass().add("card-title"); // CSS akan mengatur warna ke kuning
         header.getChildren().add(title);
-        header.setAlignment(Pos.CENTER); // Menempatkan teks di tengah
+        header.setAlignment(Pos.CENTER);
         header.setPadding(new Insets(0, 0, 10, 0));
 
         column.getChildren().add(header);
@@ -333,7 +316,7 @@ public class HomeView {
             private final Label artistDurationLabel = new Label();
             private final Label albumLabel = new Label();
 
-            { // Inisialisasi awal untuk setiap cell
+            {
                 songAlbumArt.setFitWidth(40);
                 songAlbumArt.setFitHeight(40);
                 songAlbumArt.setClip(new Circle(20, 20, 20));
@@ -365,7 +348,6 @@ public class HomeView {
                     albumLabel.setText(song.getAlbum());
 
                     try {
-                        // Menggunakan getCover()
                         InputStream coverStream = getClass().getResourceAsStream("/images/" + song.getCover());
                         if (coverStream != null) {
                             songAlbumArt.setImage(new Image(coverStream));
@@ -449,7 +431,6 @@ public class HomeView {
         return button;
     }
 
-    // Metode untuk memperbarui ikon Play/Pause
     public void updatePlayPauseButtonIcon(boolean isPlaying) {
         Label iconLabel;
         if (isPlaying) {
@@ -460,7 +441,6 @@ public class HomeView {
         iconLabel.setStyle("-fx-font-size: " + FONT_SIZE_LARGE + "; -fx-text-fill: " + ACCENT_YELLOW + ";");
         playPauseButton.setGraphic(iconLabel);
     }
-
 
     private VBox createPlayerControls() {
         VBox playerArea = new VBox(10);
@@ -495,11 +475,9 @@ public class HomeView {
         totalTimeLabel.getStyleClass().add("time-label");
         timeLabels.getChildren().addAll(currentTimeLabel, spacer, totalTimeLabel);
 
-        // Mengganti "Now Playing" mini display dengan tombol kecepatan
-        HBox speedControlsContainer = new HBox(5); // Spasi antar tombol lebih kecil agar muat 8 tombol
+        HBox speedControlsContainer = new HBox(5);
         speedControlsContainer.setAlignment(Pos.CENTER);
         
-        // Inisialisasi semua 8 tombol kecepatan
         speed025xButton = createSpeedButton("0.25x");
         speed05xButton = createSpeedButton("0.5x");
         speed075xButton = createSpeedButton("0.75x");
@@ -514,24 +492,20 @@ public class HomeView {
             speed125xButton, speed15xButton, speed175xButton, speed2xButton
         );
         HBox.setHgrow(speedControlsContainer, Priority.ALWAYS); 
-        // Mengatur margin atas untuk container tombol kecepatan
         VBox.setMargin(speedControlsContainer, new Insets(10, 0, 0, 0)); 
 
         playerArea.getChildren().addAll(songProgressBar, timeLabels, speedControlsContainer);
         return playerArea;
     }
 
-    // Metode helper untuk membuat tombol kecepatan
     private Button createSpeedButton(String text) {
         Button button = new Button(text);
         button.getStyleClass().add("speed-button");
         return button;
     }
 
-    // Metode untuk memperbarui visual tombol kecepatan yang aktif
     public void updateSpeedButtonVisual(double activeRate) {
         Platform.runLater(() -> {
-            // Hapus kelas aktif dari semua tombol
             speed025xButton.getStyleClass().remove("speed-button-active");
             speed05xButton.getStyleClass().remove("speed-button-active");
             speed075xButton.getStyleClass().remove("speed-button-active");
@@ -541,7 +515,6 @@ public class HomeView {
             speed175xButton.getStyleClass().remove("speed-button-active");
             speed2xButton.getStyleClass().remove("speed-button-active");
 
-            // Tambahkan kelas aktif ke tombol yang sesuai
             if (activeRate == 0.25) {
                 speed025xButton.getStyleClass().add("speed-button-active");
             } else if (activeRate == 0.5) {
@@ -562,22 +535,18 @@ public class HomeView {
         });
     }
 
-    // Metode untuk memperbarui progress bar
     public void updateProgressBar(double progress) {
         Platform.runLater(() -> songProgressBar.setProgress(progress));
     }
 
-    // Metode untuk memperbarui label waktu saat ini
     public void updateCurrentTimeLabel(String time) {
         Platform.runLater(() -> currentTimeLabel.setText(time));
     }
 
-    // Metode untuk memperbarui label total waktu
     public void updateTotalTimeLabel(String time) {
         Platform.runLater(() -> totalTimeLabel.setText(time));
     }
 
-    // Mengembalikan metode formatDuration ke HomeView
     private String formatDuration(int totalSeconds) {
         int minutes = totalSeconds / 60;
         int seconds = totalSeconds % 60;
@@ -614,12 +583,10 @@ public class HomeView {
         return repeatButton;
     }
 
-    // Menambahkan getter untuk volumeSlider
     public Slider getVolumeSlider() {
         return volumeSlider;
     }
 
-    // Menambahkan getter untuk tombol kecepatan
     public Button getSpeed025xButton() { return speed025xButton; }
     public Button getSpeed05xButton() { return speed05xButton; }
     public Button getSpeed075xButton() { return speed075xButton; }
@@ -629,12 +596,8 @@ public class HomeView {
     public Button getSpeed175xButton() { return speed175xButton; }
     public Button getSpeed2xButton() { return speed2xButton; }
 
-    // Menambahkan getter untuk Home Button
     public Button getHomeButton() { return homeButton; }
-
-    // --- PERUBAHAN DI SINI: Getter untuk tombol profil ---
     public Button getProfileButton() { return profileButton; }
-    // --- AKHIR PERUBAHAN ---
 
 
     public void displaySongs(List<Song> songs) {
@@ -645,14 +608,11 @@ public class HomeView {
         genreListView.getItems().setAll(genres);
     }
 
-    // Metode updateCurrentSongInfo tidak lagi mengupdate nowPlayingMiniLabel
     public void updateCurrentSongInfo(Song song) {
         if (song != null) {
             currentSongTitleLabel.setText(song.getTitle());
             currentSongArtistLabel.setText(song.getArtist());
-            // Logika nowPlayingMiniLabel dihapus
             try {
-                // Menggunakan getCover()
                 InputStream coverStream = getClass().getResourceAsStream("/images/" + song.getCover());
                 if (coverStream != null) {
                     albumArtImageView.setImage(new Image(coverStream));
@@ -667,7 +627,6 @@ public class HomeView {
         } else {
             currentSongTitleLabel.setText("No Song Playing");
             currentSongArtistLabel.setText("");
-            // Logika nowPlayingMiniLabel dihapus
             albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
         }
     }
@@ -680,18 +639,14 @@ public class HomeView {
         return BG_PRIMARY_DARK;
     }
 
-    // --- Metode untuk mengubah visual tombol Shuffle ---
     public void updateShuffleButtonVisual(boolean isOn) {
-        // Tidak ada perubahan kelas CSS untuk shuffle, karena ikonnya selalu kuning
-        // Anda bisa menambahkan atau menghapus kelas CSS di sini jika ada efek visual yang berbeda
         if (isOn) {
-            shuffleButton.getStyleClass().add("shuffle-button-active"); // Contoh kelas CSS
+            shuffleButton.getStyleClass().add("shuffle-button-active");
         } else {
             shuffleButton.getStyleClass().remove("shuffle-button-active");
         }
     }
 
-    // --- Metode untuk mengubah visual tombol Repeat ---
     public void updateRepeatButtonVisual(boolean isOn) {
         if (isOn) {
             repeatButton.getStyleClass().add("repeat-button-active");
@@ -700,11 +655,6 @@ public class HomeView {
         }
     }
 
-    /**
-     * Menampilkan pesan notifikasi di bagian atas layar.
-     * @param message Teks pesan yang akan ditampilkan.
-     * @param type Tipe pesan (saat ini hanya "info" yang memengaruhi style default).
-     */
     public void showMessage(String message, String type) {
         messageLabel.setText(message);
 

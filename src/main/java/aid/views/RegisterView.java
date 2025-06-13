@@ -6,7 +6,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
-import javafx.scene.paint.Color;
+import javafx.scene.paint.Color; // Tidak digunakan, bisa dihapus
 
 public class RegisterView {
     public TextField nickField = new TextField();
@@ -28,6 +28,8 @@ public class RegisterView {
         nickField.setPromptText("Username");
         fullField.setPromptText("Nickname");
         passField.setPromptText("Password");
+        submitBtn.setMaxWidth(300); // Batasi lebar tombol
+        submitBtn.setPrefHeight(40); // Beri tinggi preferensi
 
         profileView.setFitWidth(100);
         profileView.setFitHeight(100);
@@ -52,14 +54,20 @@ public class RegisterView {
         container.setPadding(new Insets(30));
         container.getStyleClass().add("container");
         container.setMaxWidth(350);
-        container.setMaxHeight(350);
+        // container.setMaxHeight(350); // <-- KOMENTARI BARIS INI (jika ada)
 
-        root = new VBox(20, logo, container, toLoginLabel);
+        root = new VBox(20); // Spasi antara elemen utama
+        root.getChildren().addAll(logo, container, toLoginLabel);
         root.setAlignment(Pos.CENTER);
+        // root.setPadding(new Insets(50)); // Opsional: Tambahkan padding di root jika perlu ruang
+        VBox.setVgrow(container, Priority.NEVER); // Pastikan container tidak terlalu 'tumbuh'
+
+        root.setPickOnBounds(true);
     }
 
     public Scene getScene() {
-        Scene scene = new Scene(root, 400, 500);
+        // Scene scene = new Scene(root, 400, 500); // Hapus ukuran tetap ini
+        Scene scene = new Scene(root); // Biarkan Scene beradaptasi dengan ukuran root
         scene.getStylesheets().add(getClass().getResource("/styles/LOGstyle.css").toExternalForm());
         return scene;
     }

@@ -1,9 +1,10 @@
 package aid.views;
 
-import aid.controllers.HomeController; // Import HomeController
+import aid.controllers.HomeController;
 import aid.controllers.ProfileController;
 import aid.models.*;
-import javafx.application.Application;
+import aid.utils.IDGenerator;
+import aid.utils.UserDataUtil;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -12,6 +13,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -24,8 +27,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import aid.utils.songUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ListView;
@@ -47,6 +50,8 @@ public class ProfileView {
     private FlowPane mySongsPane = new FlowPane(10, 10);
     private User user;
 
+    private MediaPlayer currentProfileMediaPlayer;
+
     public ProfileView(ProfileController controller, Stage primaryStage, User user) {
         this.controller = controller;
         this.primaryStage = primaryStage;
@@ -55,7 +60,6 @@ public class ProfileView {
         BorderPane root = new BorderPane();
         root.getStyleClass().add("root");
 
-        // Logo - dengan error handling
         ImageView logoView = null;
         try {
             InputStream logoStream = getClass().getResourceAsStream("/images/Logo2.png");
@@ -67,7 +71,6 @@ public class ProfileView {
                 logoView.setPreserveRatio(false);
                 logoView.setSmooth(true);
             } else {
-                // Fallback jika logo tidak ditemukan
                 logoView = new ImageView();
                 logoView.setFitWidth(140);
                 logoView.setFitHeight(70);
@@ -84,21 +87,18 @@ public class ProfileView {
         logoPane.setPadding(new Insets(20, 20, 10, 0));
         logoPane.setAlignment(Pos.CENTER);
 
-        // HOME Button - dengan error handling
         Button homeButton = createIconButton("/images/iconHome.png", "Home");
         homeButton.setPadding(new Insets(10, 25, 0, 25));
-        // --- PERUBAHAN DI SINI UNTUK NAVIGASI KE HOME ---
         homeButton.setOnAction(e -> {
-            controller.goToHome(user); // Panggil metode di ProfileController untuk navigasi ke Home
+            System.out.println("DEBUG: Home button clicked from Profile. Navigating to Home Scene.");
+            stopAndDisposeProfileMediaPlayer();
+            controller.goToHome(user);
         });
-        // --- AKHIR PERUBAHAN ---
 
-        // Setting Button - dengan error handling
         Button settingButton = createIconButton("/images/iconSetting.png", "Settings");
         settingButton.setPadding(new Insets(10, 25, 0, 25));
         settingButton.setOnAction(e -> showSettingScene());
 
-        // Tambah Playlist Button - dengan error handling
         Button addPlaylistButton = createIconButton("/images/iconPlaylist.png", "Add Playlist");
         addPlaylistButton.setText("+");
         addPlaylistButton.getStyleClass().add("add-playlist-button");
@@ -116,21 +116,17 @@ public class ProfileView {
         logoRow.setSpacing(20);
         logoRow.getChildren().addAll(homeButton, settingButton, addPlaylistButton, leftSpacer, logoPane);
 
-        // Header
         HBox header = new HBox();
         header.getStyleClass().add("header");
         header.setAlignment(Pos.CENTER_LEFT);
 
-        // Profile Picture - dengan error handling
         profileImageView = new ImageView();
         try {
             if (user.getProfileImagePath() != null && !user.getProfileImagePath().isEmpty()) {
-                // Jika path adalah file lokal
                 File file = new File(user.getProfileImagePath());
                 if (file.exists()) {
                     profileImageView.setImage(new Image(file.toURI().toString()));
                 } else {
-                    // fallback ke resource jika file tidak ada
                     InputStream profileStream = getClass().getResourceAsStream(user.getProfileImagePath());
                     if (profileStream != null) {
                         profileImageView.setImage(new Image(profileStream));
@@ -157,7 +153,6 @@ public class ProfileView {
         profileImageView.setClip(circle);
         HBox.setMargin(profileImageView, new Insets(20, 0, 0, 20));
 
-        // User Info
         userName = new Text(user.getUserName());
         userName.getStyleClass().add("user-name");
 
@@ -168,7 +163,6 @@ public class ProfileView {
         userInfoBox.setPadding(new Insets(20, 0, 0, 20));
         userInfoBox.setSpacing(5);
 
-        // Stats Box
         Text followingCountText = new Text("2k");
         followingCountText.getStyleClass().add("stat-value");
         VBox followingBox = createStatBox("Following", followingCountText);
@@ -177,7 +171,6 @@ public class ProfileView {
         followersCountText.getStyleClass().add("stat-value");
         VBox followersBox = createStatBox("Followers", followersCountText);
 
-        // playlist count
         playlistCountText = new Text("0");
         playlistCountText.getStyleClass().add("stat-value");
         VBox playlistBox = createStatBox("Playlists", playlistCountText);
@@ -203,7 +196,6 @@ public class ProfileView {
 
         root.setTop(topBox);
 
-        // konten utama
         VBox mainContentBox = new VBox();
         mainContentBox.getStyleClass().add("main-content");
         mainContentBox.setPadding(new Insets(20, 20, 20, 20));
@@ -213,8 +205,8 @@ public class ProfileView {
         myPlaylistLabel.getStyleClass().add("section-title");
 
         ScrollPane playlistScroll = new ScrollPane(playlistContainer);
-        playlistScroll.setId("playlist-scroll"); // Pastikan ID sesuai dengan CSS
-        playlistScroll.getStyleClass().add("scroll-pane"); // Tambahkan style class
+        playlistScroll.setId("playlist-scroll");
+        playlistScroll.getStyleClass().add("scroll-pane");
         playlistScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         playlistScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         playlistScroll.setFitToHeight(true);
@@ -223,21 +215,17 @@ public class ProfileView {
         playlistScroll.setPrefViewportHeight(160);
         playlistScroll.setPrefViewportWidth(900);
 
-        // Pastikan playlist container juga transparan
         playlistContainer.getStyleClass().add("playlist-container");
         playlistContainer.setStyle("-fx-background-color: transparent;");
 
-        // Alternative: Set background langsung di kode
         playlistScroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
 
-        // Jika masih ada masalah, coba tambahkan ini ke mainContentBox:
         mainContentBox.setStyle("-fx-background-color: rgb(0, 0, 0);");
 
         Button mySongsButton = new Button("My Songs");
         mySongsButton.getStyleClass().add("my-songs-button");
         mainContentBox.getChildren().addAll(myPlaylistLabel, playlistScroll, mySongsButton, mySongsPane);
 
-        // heandler button mySongs
         mySongsButton.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Pilih Lagu");
@@ -248,7 +236,6 @@ public class ProfileView {
             if (file != null && !mySongFiles.contains(file)) {
                 mySongFiles.add(file);
 
-                // tombol bulat untuk laguvv
                 Button songButton = new Button("♪");
                 songButton.getStyleClass().addAll("circle-btn", "play");
                 songButton.setPrefSize(56, 56);
@@ -279,7 +266,6 @@ public class ProfileView {
         root.setRight(rightBox);
 
         Scene scene = new Scene(root);
-        // Error handling untuk CSS
         try {
             InputStream cssStream = getClass().getResourceAsStream("/styles/profileStyle.css");
             if (cssStream != null) {
@@ -296,10 +282,59 @@ public class ProfileView {
         primaryStage.setScene(scene);
         primaryStage.setFullScreen(true);
         primaryStage.show();
+
+        loadUserPlaylists();
     }
 
     public Scene getScene() {
         return mainScene;
+    }
+    
+    private void loadUserPlaylists() {
+        playlistContainer.getChildren().clear();
+        List<Playlist> userPlaylists = user.getPlaylists();
+        System.out.println("DEBUG: Loading " + userPlaylists.size() + " playlists for user: " + user.getUserName());
+        for (Playlist p : userPlaylists) {
+            List<Song> songsInPlaylist = UserDataUtil.getDataManager().getSongsByIds(p.getSongIds(), p);
+            
+            String playlistCoverPath = "default_album_art.png";
+            String playlistDescription = "Total songs: " + songsInPlaylist.size();
+            
+            if (!songsInPlaylist.isEmpty()) {
+                playlistCoverPath = songsInPlaylist.get(0).getCover();
+            }
+
+            if (p instanceof SmartPlaylist) {
+                SmartPlaylist sp = (SmartPlaylist) p;
+                playlistDescription = "Smart Playlist (Genre: " + sp.getGenreCriteria() + ")";
+                if (songsInPlaylist.isEmpty()) {
+                    playlistDescription += " - No songs match criteria";
+                }
+            } else if (p instanceof StandardPlaylist) {
+                playlistDescription = "Standard Playlist (Songs: " + songsInPlaylist.size() + ")";
+            }
+
+            ImageView coverView = new ImageView();
+            try {
+                InputStream coverStream = getClass().getResourceAsStream("/images/" + playlistCoverPath);
+                if (coverStream != null) {
+                    coverView.setImage(new Image(coverStream));
+                } else {
+                    System.err.println("Cover image not found for playlist " + p.getName() + ": /images/" + playlistCoverPath);
+                    coverView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+                }
+            } catch (Exception e) {
+                System.err.println("Error loading cover for playlist " + p.getName() + ": " + e.getMessage());
+                coverView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+            }
+            coverView.setFitWidth(120);
+            coverView.setFitHeight(120);
+            coverView.setPreserveRatio(true);
+
+            PlaylistCard card = new PlaylistCard(p.getName(), playlistDescription, songsInPlaylist, coverView);
+            playlistContainer.getChildren().add(card);
+        }
+        playlistCountText.setText(String.valueOf(playlistContainer.getChildren().size()));
     }
 
     private Button createIconButton(String iconPath, String tooltipText) {
@@ -314,11 +349,11 @@ public class ProfileView {
                 button.setGraphic(imageView);
             } else {
                 System.err.println("Warning: Icon " + iconPath + " not found.");
-                button.setText(tooltipText); // Fallback ke text jika icon tidak ditemukan
+                button.setText(tooltipText);
             }
         } catch (Exception e) {
             System.err.println("Error loading icon " + iconPath + ": " + e.getMessage());
-            button.setText(tooltipText); // Fallback ke text jika terjadi error
+            button.setText(tooltipText);
         }
         button.getStyleClass().add("icon-button");
         return button;
@@ -338,7 +373,6 @@ public class ProfileView {
         TextField nicknameField = new TextField(nickName.getText());
         nicknameField.getStyleClass().add("text-field");
 
-        // Tombol Ganti Foto Profil
         Button changePhotoButton = new Button("Ganti Foto Profil");
         changePhotoButton.getStyleClass().add("change-photo-button");
         final File[] selectedFile = { null };
@@ -355,13 +389,12 @@ public class ProfileView {
             }
         });
 
-        // Tombol Simpan
         Button saveButton = new Button("Simpan");
         saveButton.getStyleClass().add("save-button");
         saveButton.setOnAction(e -> {
             String newUsername = usernameField.getText().trim();
             String newNickname = nicknameField.getText().trim();
-            String oldUserName = user.getUserName(); // simpan sebelum diubah
+            String oldUserName = user.getUserName();
 
             if (!newUsername.isEmpty()) {
                 user.setUserName(newUsername);
@@ -376,7 +409,7 @@ public class ProfileView {
                 profileImageView.setImage(new Image(selectedFile[0].toURI().toString()));
             }
 
-            aid.utils.UserDataUtil.updateUser(oldUserName, user);
+            UserDataUtil.updateUser(oldUserName, user);
 
             Stage stage = (Stage) saveButton.getScene().getWindow();
             stage.close();
@@ -399,9 +432,8 @@ public class ProfileView {
                 buttonBox);
 
         Scene settingScene = new Scene(settingLayout, 400, 450);
-        settingScene.setFill(javafx.scene.paint.Color.TRANSPARENT); // Set transparent background
+        settingScene.setFill(javafx.scene.paint.Color.TRANSPARENT);
 
-        // Error handling untuk CSS
         try {
             InputStream cssStream = getClass().getResourceAsStream("/styles/profileStyle.css");
             if (cssStream != null) {
@@ -415,10 +447,10 @@ public class ProfileView {
 
         Stage popupStage = new Stage();
         popupStage.initOwner(primaryStage);
-        popupStage.initModality(Modality.WINDOW_MODAL); // Tambahkan modality
+        popupStage.initModality(Modality.WINDOW_MODAL);
         popupStage.setScene(settingScene);
         popupStage.setResizable(false);
-        popupStage.initStyle(javafx.stage.StageStyle.TRANSPARENT); // Tambahkan style tanpa border
+        popupStage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
         popupStage.show();
     }
 
@@ -441,16 +473,35 @@ public class ProfileView {
         descField.setPromptText("Deskripsi playlist");
         descField.getStyleClass().add("popup-text-field");
 
-        Label laguLabel = new Label("Pilih Lagu:");
-        List<Song> songs = songUtils.loadSongsFromJson(getClass());
-        ListView<Song> laguListView = new ListView<>(FXCollections.observableArrayList(songs));
-        laguListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        laguListView.setPrefHeight(120); // Atur tinggi sesuai kebutuhan
+        Label typeLabel = new Label("Tipe Playlist:");
+        ComboBox<String> typeComboBox = new ComboBox<>();
+        typeComboBox.getItems().addAll("Standard", "Smart");
+        typeComboBox.setValue("Standard");
+        typeComboBox.getStyleClass().add("popup-combo-box");
 
-        // Custom cell untuk tampilkan cover + judul + artist
+        Label smartCriteriaLabel = new Label("Pilih Genre untuk Smart Playlist:");
+        ComboBox<String> smartGenreComboBox = new ComboBox<>();
+        List<String> allGenres = UserDataUtil.getDataManager().getSongs().stream()
+                                        .map(Song::getGenre)
+                                        .filter(genre -> genre != null && !genre.isEmpty())
+                                        .distinct()
+                                        .sorted()
+                                        .collect(Collectors.toList());
+        smartGenreComboBox.getItems().addAll(allGenres);
+        smartGenreComboBox.setPromptText("Pilih Genre");
+        smartGenreComboBox.getStyleClass().add("popup-combo-box");
+
+        VBox smartOptionsBox = new VBox(5, smartCriteriaLabel, smartGenreComboBox);
+        smartOptionsBox.setVisible(false);
+        smartOptionsBox.setManaged(false);
+
+        Label laguLabel = new Label("Pilih Lagu:");
+        List<Song> allAvailableSongs = UserDataUtil.getDataManager().getSongs();
+        ListView<Song> laguListView = new ListView<>(FXCollections.observableArrayList(allAvailableSongs));
+        laguListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        laguListView.setPrefHeight(120);
         laguListView.setCellFactory(lv -> new ListCell<>() {
             private final ImageView imageView = new ImageView();
-
             @Override
             protected void updateItem(Song song, boolean empty) {
                 super.updateItem(song, empty);
@@ -458,20 +509,18 @@ public class ProfileView {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    // MENGGUNAKAN GETTER
                     setText(song.getTitle() + " - " + song.getArtist());
                     try {
-                        // MODIFIKASI INI: Tambahkan prefiks "images/" di sini
                         InputStream coverStream = getClass().getResourceAsStream("/images/" + song.getCover());
                         if (coverStream != null) {
                             imageView.setImage(new Image(coverStream, 32, 32, true, true));
                         } else {
                             System.err.println("Cover image not found for song: " + song.getTitle() + " at /images/" + song.getCover());
-                            imageView.setImage(null); // Atau set ke gambar placeholder
+                            imageView.setImage(null);
                         }
                     } catch (Exception e) {
                         System.err.println("Error loading cover image for " + song.getTitle() + ": " + e.getMessage());
-                        imageView.setImage(null); // Atau set ke gambar placeholder
+                        imageView.setImage(null);
                     }
                     imageView.setFitWidth(32);
                     imageView.setFitHeight(32);
@@ -479,17 +528,82 @@ public class ProfileView {
                 }
             }
         });
+        VBox standardOptionsBox = new VBox(5, laguLabel, laguListView);
+        standardOptionsBox.setVisible(true);
+        standardOptionsBox.setManaged(true);
 
         // Tombol Simpan dan Batal
-        Button simpanBtn = new Button("Simpan");
+        Button simpanBtn = new Button("Simpan"); // <--- DEKLARASI simpanBtn DI SINI
         simpanBtn.getStyleClass().add("primary-button");
+
+        typeComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if ("Smart".equals(newVal)) {
+                smartOptionsBox.setVisible(true);
+                smartOptionsBox.setManaged(true);
+                standardOptionsBox.setVisible(false);
+                standardOptionsBox.setManaged(false);
+                simpanBtn.setDisable(smartGenreComboBox.getValue() == null || smartGenreComboBox.getValue().isEmpty());
+            } else { // Standard
+                smartOptionsBox.setVisible(false);
+                smartOptionsBox.setManaged(false);
+                standardOptionsBox.setVisible(true);
+                standardOptionsBox.setManaged(true);
+                simpanBtn.setDisable(laguListView.getSelectionModel().isEmpty());
+            }
+        });
+
+        smartGenreComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
+            simpanBtn.setDisable(newVal == null || newVal.isEmpty());
+        });
+        
+        laguListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if ("Standard".equals(typeComboBox.getValue())) {
+                simpanBtn.setDisable(laguListView.getSelectionModel().isEmpty());
+            }
+        });
+        simpanBtn.setDisable(true);
+
+
         simpanBtn.setOnAction(e -> {
             String playlistName = nameField.getText().trim();
             String playlistDesc = descField.getText().trim();
-            ObservableList<Song> selectedSongs = laguListView.getSelectionModel().getSelectedItems();
+            String playlistType = typeComboBox.getValue();
+            
+            Playlist newPlaylist = null;
 
-            if (!playlistName.isEmpty() && !selectedSongs.isEmpty()) {
-                addPlaylist(playlistName, playlistDesc, selectedSongs);
+            if (playlistName.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Nama playlist tidak boleh kosong!");
+                alert.showAndWait();
+                return;
+            }
+
+            if ("Standard".equals(playlistType)) {
+                ObservableList<Song> selectedSongs = laguListView.getSelectionModel().getSelectedItems();
+                if (selectedSongs.isEmpty()) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING, "Pilih setidaknya satu lagu untuk Standard Playlist!");
+                    alert.showAndWait();
+                    return;
+                }
+                List<String> selectedSongIds = selectedSongs.stream()
+                                            .map(song -> String.valueOf(song.getId()))
+                                            .collect(Collectors.toList());
+                
+                newPlaylist = new StandardPlaylist(IDGenerator.generateUniqueId(), playlistName, user.getUserName(), selectedSongIds);
+            } else if ("Smart".equals(playlistType)) {
+                String selectedGenre = smartGenreComboBox.getValue();
+                if (selectedGenre == null || selectedGenre.isEmpty()) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING, "Pilih genre untuk Smart Playlist!");
+                    alert.showAndWait();
+                    return;
+                }
+                SmartPlaylist tempSmartPlaylist = new SmartPlaylist(IDGenerator.generateUniqueId(), playlistName, user.getUserName(), new ArrayList<>());
+                tempSmartPlaylist.setGenreCriteria(selectedGenre);
+                newPlaylist = tempSmartPlaylist;
+            }
+
+            if (newPlaylist != null) {
+                UserDataUtil.getDataManager().addPlaylistToUser(user, newPlaylist);
+                loadUserPlaylists();
             }
             Stage stage = (Stage) simpanBtn.getScene().getWindow();
             stage.close();
@@ -509,12 +623,13 @@ public class ProfileView {
                 titleLabel,
                 nameLabel, nameField,
                 descLabel, descField,
-                laguLabel, laguListView,
+                typeLabel, typeComboBox,
+                smartOptionsBox,
+                standardOptionsBox,
                 buttonBox);
 
-        Scene popupScene = new Scene(popupLayout, 400, 400);
-
-        // Error handling untuk CSS
+        Scene popupScene = new Scene(popupLayout, 400, 450);
+        
         try {
             InputStream cssStream = getClass().getResourceAsStream("/styles/profileStyle.css");
             if (cssStream != null) {
@@ -546,6 +661,8 @@ public class ProfileView {
     }
 
     private void showMySongPlayer(File audioFile) {
+        stopAndDisposeProfileMediaPlayer();
+
         VBox root = new VBox(24);
         root.getStyleClass().add("popup-player");
         root.setPrefWidth(350);
@@ -553,20 +670,16 @@ public class ProfileView {
         root.setMinWidth(350);
         root.setPrefHeight(600);
 
-        // Judul file
         Label title = new Label(audioFile.getName());
         title.getStyleClass().add("player-title");
 
-        // Player bulat
         Button playCircle = new Button("▶");
         playCircle.getStyleClass().addAll("circle-btn", "play");
         playCircle.setStyle("-fx-shape: 'M50,10 a40,40 0 1,0 80,0 a40,40 0 1,0 -80,0';");
 
-        // Progress bar
         javafx.scene.control.ProgressBar progressBar = new javafx.scene.control.ProgressBar(0);
         progressBar.getStyleClass().add("progress-bar");
 
-        // Kontrol
         HBox controls = new HBox(24);
         controls.setAlignment(Pos.CENTER);
         Button pauseBtn = new Button("⏸");
@@ -575,115 +688,140 @@ public class ProfileView {
         stopBtn.getStyleClass().addAll("circle-btn");
         controls.getChildren().addAll(playCircle, pauseBtn, stopBtn);
 
-        // MediaPlayer
-        MediaPlayer[] player = new MediaPlayer[1];
+        try {
+            Media media = new Media(audioFile.toURI().toString());
+            currentProfileMediaPlayer = new MediaPlayer(media);
+            currentProfileMediaPlayer.setVolume(1.0);
+            currentProfileMediaPlayer.currentTimeProperty().addListener((obs, oldVal, newVal) -> {
+                if (currentProfileMediaPlayer.getTotalDuration() != null && currentProfileMediaPlayer.getTotalDuration().toMillis() > 0) {
+                    double progress = newVal.toMillis() / currentProfileMediaPlayer.getTotalDuration().toMillis();
+                    progressBar.setProgress(progress);
+                } else {
+                    progressBar.setProgress(0);
+                }
+            });
+            currentProfileMediaPlayer.play();
+        } catch (Exception ex) {
+            System.err.println("Gagal memutar file: " + ex.getMessage());
+            currentProfileMediaPlayer = null;
+        }
 
         playCircle.setOnAction(e -> {
-            if (player[0] != null)
-                player[0].stop();
-            try {
-                Media media = new Media(audioFile.toURI().toString());
-                player[0] = new MediaPlayer(media);
-                player[0].setVolume(1.0);
-                player[0].currentTimeProperty().addListener((obs, oldVal, newVal) -> {
-                    if (player[0].getTotalDuration() != null && player[0].getTotalDuration().toMillis() > 0) {
-                        double progress = newVal.toMillis() / player[0].getTotalDuration().toMillis();
-                        progressBar.setProgress(progress);
-                    } else {
-                        progressBar.setProgress(0);
-                    }
-                });
-                player[0].play();
-            } catch (Exception ex) {
-                System.err.println("Gagal memutar file: " + ex.getMessage());
+            if (currentProfileMediaPlayer != null) {
+                currentProfileMediaPlayer.play();
             }
         });
 
         pauseBtn.setOnAction(e -> {
-            if (player[0] != null)
-                player[0].pause();
+            if (currentProfileMediaPlayer != null)
+                currentProfileMediaPlayer.pause();
         });
         stopBtn.setOnAction(e -> {
-            if (player[0] != null)
-                player[0].stop();
+            if (currentProfileMediaPlayer != null)
+                currentProfileMediaPlayer.stop();
         });
 
         root.getChildren().addAll(title, progressBar, controls);
         rightBox.getChildren().setAll(root);
     }
 
-    // Overloaded method to add playlist with a list of songs
+    private void stopAndDisposeProfileMediaPlayer() {
+        if (currentProfileMediaPlayer != null) {
+            currentProfileMediaPlayer.stop();
+            currentProfileMediaPlayer.dispose();
+            currentProfileMediaPlayer = null;
+            System.out.println("DEBUG: MediaPlayer di ProfileView telah dihentikan dan dibuang.");
+        }
+    }
+
     public void addPlaylist(String name, String description, ObservableList<Song> songs) {
-        // MENGGUNAKAN GETTER
-        String cover = (songs != null && !songs.isEmpty() && songs.get(0).getCover() != null)
-                ? songs.get(0).getCover()
-                : "default_cover.png"; // Hapus "images/" dari sini
+        displayPlaylistCard(name, description, new ArrayList<>(songs));
+    }
+
+    private void displayPlaylistCard(String name, String description, List<Song> songs) {
+        String coverPath = "default_album_art.png";
+        if (songs != null && !songs.isEmpty() && songs.get(0).getCover() != null) {
+            coverPath = songs.get(0).getCover();
+        }
 
         ImageView coverView = new ImageView();
         try {
-            // MODIFIKASI INI: Tambahkan prefiks "images/" di sini
-            InputStream coverStream = getClass().getResourceAsStream("/images/" + cover);
+            InputStream coverStream = getClass().getResourceAsStream("/images/" + coverPath);
             if (coverStream != null) {
                 coverView.setImage(new Image(coverStream));
             } else {
-                System.err.println("Cover image not found for playlist: /images/" + cover);
+                System.err.println("Cover image not found for playlist: /images/" + coverPath);
+                coverView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
             }
         } catch (Exception e) {
             System.err.println("Error loading cover image for playlist: " + e.getMessage());
-            coverView.setImage(null);
+            coverView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
         }
         coverView.setFitWidth(120);
         coverView.setFitHeight(120);
         coverView.setPreserveRatio(true);
 
-        PlaylistCard card = new PlaylistCard(name, description, new java.util.ArrayList<>(songs), coverView);
+        PlaylistCard card = new PlaylistCard(name, description, songs, coverView);
         playlistContainer.getChildren().add(card);
         playlistCountText.setText(String.valueOf(playlistContainer.getChildren().size()));
     }
 
-    private VBox showMusicPlayerPanel(Song song, List<Song> playlist) {
+    private VBox showMusicPlayerPanel(Playlist playlistToPlay) {
+        stopAndDisposeProfileMediaPlayer();
+
         VBox root = new VBox(24);
         root.getStyleClass().add("popup-player");
-        root.setPrefWidth(350); // atau sesuai rightBox
+        root.setPrefWidth(350);
         root.setMaxWidth(350);
         root.setMinWidth(350);
         root.setPrefHeight(600);
 
-        // Header: Judul & Artis
-        // MENGGUNAKAN GETTER
-        Label title = new Label(song.getTitle());
+        List<Song> songsToPlay;
+        if (playlistToPlay instanceof SmartPlaylist) {
+            songsToPlay = UserDataUtil.getDataManager().getSongsByIds(null, playlistToPlay);
+        } else {
+            songsToPlay = UserDataUtil.getDataManager().getSongsByIds(playlistToPlay.getSongIds(), playlistToPlay);
+        }
+        
+        if (songsToPlay.isEmpty()) {
+            Label noSongsLabel = new Label("Tidak ada lagu di playlist ini.");
+            noSongsLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+            root.getChildren().add(noSongsLabel);
+            return root;
+        }
+        
+        Song initialSong = songsToPlay.get(0);
+
+        Label title = new Label(initialSong.getTitle());
         title.getStyleClass().add("player-title");
-        Label artist = new Label(song.getArtist());
+        Label artist = new Label(initialSong.getArtist());
         artist.getStyleClass().add("player-artist");
 
         VBox info = new VBox(title, artist);
         info.setAlignment(Pos.CENTER);
 
-        // --- TAMPILKAN DAFTAR LAGU DI PLAYLIST ---
-        ListView<Song> songListView = new ListView<>(FXCollections.observableArrayList(playlist));
+        ListView<Song> songListView = new ListView<>(FXCollections.observableArrayList(songsToPlay));
         songListView.getStyleClass().add("song-list-view");
         songListView.setPrefHeight(120);
         songListView.setCellFactory(lv -> new ListCell<>() {
             @Override
             protected void updateItem(Song item, boolean empty) {
                 super.updateItem(item, empty);
-                // MENGGUNAKAN GETTER
                 setText((empty || item == null) ? null : item.getTitle() + " - " + item.getArtist());
             }
         });
+        songListView.getSelectionModel().select(initialSong);
 
-        // Progress bar
         javafx.scene.control.ProgressBar progressBar = new javafx.scene.control.ProgressBar(0);
         progressBar.getStyleClass().add("progress-bar");
 
-        // Kontrol musik
         HBox controls = new HBox(24);
         controls.setAlignment(Pos.CENTER);
         Button prevBtn = new Button("⏮");
         Button playBtn = new Button("▶");
         Button stopBtn = new Button("⏹");
         Button nextBtn = new Button("⏭");
-        Button addBtn = new Button("+");
+        Button addBtn = new Button("+"); // Tombol tambah lagu ke playlist
         prevBtn.getStyleClass().addAll("circle-btn");
         playBtn.getStyleClass().addAll("circle-btn", "play");
         stopBtn.getStyleClass().addAll("circle-btn");
@@ -692,111 +830,126 @@ public class ProfileView {
 
         controls.getChildren().addAll(prevBtn, playBtn, stopBtn, nextBtn);
 
-        // Logic pemutaran lagu
-        MediaPlayer[] player = new MediaPlayer[1];
-        int[] songIndex = { playlist.indexOf(song) };
+        int[] songIndex = { songsToPlay.indexOf(initialSong) };
 
         Runnable[] playCurrent = new Runnable[1];
         playCurrent[0] = () -> {
-            if (player[0] != null)
-                player[0].stop();
+            stopAndDisposeProfileMediaPlayer();
             try {
-                // MENGGUNAKAN GETTER
-                String resource = getClass().getResource("/songs/" + playlist.get(songIndex[0]).getFile()).toExternalForm();
+                String resource = getClass().getResource("/songs/" + songsToPlay.get(songIndex[0]).getFile()).toExternalForm();
                 Media media = new Media(resource);
-                player[0] = new MediaPlayer(media);
-                player[0].setVolume(1.0);
-                player[0].setOnEndOfMedia(() -> {
-                    if (songIndex[0] < playlist.size() - 1) {
+                currentProfileMediaPlayer = new MediaPlayer(media);
+                currentProfileMediaPlayer.setVolume(1.0);
+                currentProfileMediaPlayer.setOnEndOfMedia(() -> {
+                    if (songIndex[0] < songsToPlay.size() - 1) {
                         songIndex[0]++;
                         playCurrent[0].run();
                         songListView.getSelectionModel().select(songIndex[0]);
                     }
                 });
-                // Update progress bar
-                player[0].currentTimeProperty().addListener((obs, oldVal, newVal) -> {
-                    if (player[0].getTotalDuration() != null && player[0].getTotalDuration().toMillis() > 0) {
-                        double progress = newVal.toMillis() / player[0].getTotalDuration().toMillis();
+                currentProfileMediaPlayer.currentTimeProperty().addListener((obs, oldVal, newVal) -> {
+                    if (currentProfileMediaPlayer.getTotalDuration() != null && currentProfileMediaPlayer.getTotalDuration().toMillis() > 0) {
+                        double progress = newVal.toMillis() / currentProfileMediaPlayer.getTotalDuration().toMillis();
                         progressBar.setProgress(progress);
                     } else {
                         progressBar.setProgress(0);
                     }
                 });
-                player[0].play();
-                // MENGGUNAKAN GETTER
-                title.setText(playlist.get(songIndex[0]).getTitle());
-                artist.setText(playlist.get(songIndex[0]).getArtist());
+                currentProfileMediaPlayer.play();
+                title.setText(songsToPlay.get(songIndex[0]).getTitle());
+                artist.setText(songsToPlay.get(songIndex[0]).getArtist());
                 songListView.getSelectionModel().select(songIndex[0]);
             } catch (Exception e) {
                 System.err.println("Gagal memutar lagu: " + e.getMessage());
+                currentProfileMediaPlayer = null;
             }
         };
 
-        // Gunakan playCurrent[0].run() di semua tempat yang sebelumnya
-        // playCurrent.run()
         playBtn.setOnAction(e -> playCurrent[0].run());
         stopBtn.setOnAction(e -> {
-            if (player[0] != null)
-                player[0].stop();
+            if (currentProfileMediaPlayer != null)
+                currentProfileMediaPlayer.stop();
         });
         nextBtn.setOnAction(e -> {
-            if (songIndex[0] < playlist.size() - 1) {
+            if (currentProfileMediaPlayer != null && songIndex[0] < songsToPlay.size() - 1) {
                 songIndex[0]++;
                 playCurrent[0].run();
             }
         });
         prevBtn.setOnAction(e -> {
-            if (songIndex[0] > 0) {
+            if (currentProfileMediaPlayer != null && songIndex[0] > 0) {
                 songIndex[0]--;
                 playCurrent[0].run();
             }
         });
 
-        // Tombol tambah lagu (bisa diisi logic sesuai kebutuhan)
         addBtn.setOnAction(e -> {
-            List<Song> allSongs = songUtils.loadSongsFromJson(getClass());
-            List<Song> notInPlaylist = allSongs.stream()
-                    .filter(s -> !playlist.contains(s))
-                    .toList();
+            if (playlistToPlay instanceof StandardPlaylist) {
+                StandardPlaylist standardPlaylist = (StandardPlaylist) playlistToPlay;
 
-            ListView<Song> pilihLagu = new ListView<>(FXCollections.observableArrayList(notInPlaylist));
-            pilihLagu.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-            pilihLagu.setPrefHeight(120);
+                List<Song> allSongs = UserDataUtil.getDataManager().getSongs();
+                List<Song> notInPlaylist = allSongs.stream()
+                        .filter(s -> !standardPlaylist.getSongIds().contains(String.valueOf(s.getId())))
+                        .collect(Collectors.toList());
 
-            Label label = new Label("Pilih Lagu:");
-            Button simpan = new Button("Simpan");
-            simpan.setOnAction(ev -> {
-                List<Song> selected = new java.util.ArrayList<>(pilihLagu.getSelectionModel().getSelectedItems());
-                playlist.addAll(selected);
-                songListView.getItems().addAll(selected);
-                ((Stage) simpan.getScene().getWindow()).close();
-            });
+                ListView<Song> pilihLagu = new ListView<>(FXCollections.observableArrayList(notInPlaylist));
+                pilihLagu.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                pilihLagu.setPrefHeight(120);
 
-            VBox popupLayout = new VBox(16, label, pilihLagu, simpan);
-            popupLayout.getStyleClass().add("add-song-popup");
-            label.getStyleClass().add("label");
-            pilihLagu.getStyleClass().add("list-view");
-            simpan.getStyleClass().add("button");
+                Label label = new Label("Pilih Lagu:");
+                Button simpan = new Button("Simpan");
+                simpan.setOnAction(ev -> {
+                    List<Song> selectedToAdd = new java.util.ArrayList<>(pilihLagu.getSelectionModel().getSelectedItems());
+                    for (Song s : selectedToAdd) {
+                        standardPlaylist.addSong(String.valueOf(s.getId()));
+                    }
+                    UserDataUtil.getDataManager().updateUserInList(user);
 
-            Scene popupScene = new Scene(popupLayout, 320, 280);
-            try {
-                InputStream cssStream = getClass().getResourceAsStream("/styles/profileStyle.css");
-                if (cssStream != null) {
-                    popupScene.getStylesheets().add(getClass().getResource("/styles/profileStyle.css").toExternalForm());
-                } else {
-                    System.err.println("Warning: profileStyle.css not found for add song popup.");
+                    songListView.getItems().addAll(selectedToAdd);
+                    loadUserPlaylists();
+                    ((Stage) simpan.getScene().getWindow()).close();
+                });
+
+                VBox popupLayout = new VBox(16, label, pilihLagu, simpan);
+                popupLayout.getStyleClass().add("add-song-popup");
+                Label infoLabel = new Label("Hanya untuk Standard Playlist.");
+                infoLabel.setStyle("-fx-text-fill: gray; -fx-font-size: 10px;");
+                popupLayout.getChildren().add(infoLabel);
+
+                Scene popupScene = new Scene(popupLayout, 320, 280);
+                try {
+                    InputStream cssStream = getClass().getResourceAsStream("/styles/profileStyle.css");
+                    if (cssStream != null) {
+                        popupScene.getStylesheets().add(getClass().getResource("/styles/profileStyle.css").toExternalForm());
+                    } else {
+                        System.err.println("Warning: profileStyle.css not found for add song popup.");
+                    }
+                } catch (Exception ex) {
+                    System.err.println("Error loading CSS for add song popup: " + ex.getMessage());
                 }
-            } catch (Exception ex) {
-                System.err.println("Error loading CSS for add song popup: " + ex.getMessage());
+                Stage popupStage = new Stage();
+                popupStage.initOwner(primaryStage);
+                popupStage.initModality(Modality.WINDOW_MODAL);
+                popupStage.setScene(popupScene);
+                popupStage.setTitle("Tambah Lagu ke Playlist");
+                popupStage.setResizable(false);
+                popupStage.show();
+
+            } else {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Tidak bisa menambah lagu ke Smart Playlist secara manual.");
+                alert.showAndWait();
             }
-            Stage popupStage = new Stage();
-            popupStage.initOwner(primaryStage);
-            popupStage.initModality(Modality.WINDOW_MODAL);
-            popupStage.setScene(popupScene);
-            popupStage.setTitle("Tambah Lagu ke Playlist");
-            popupStage.setResizable(false);
-            popupStage.show();
         });
+        
+        // --- PERBAIKAN: Sembunyikan tombol + jika SmartPlaylist ---
+        if (playlistToPlay instanceof SmartPlaylist) {
+            addBtn.setVisible(false);
+            addBtn.setManaged(false); // Penting agar tidak menyisakan ruang kosong
+        } else {
+            addBtn.setVisible(true);
+            addBtn.setManaged(true);
+        }
+        // --- AKHIR PERBAIKAN ---
 
         root.getChildren().addAll(info, songListView, progressBar, controls, addBtn);
 
@@ -804,13 +957,13 @@ public class ProfileView {
     }
 
     class PlaylistCard extends HBox {
-        private List<Song> songs;
+        private Playlist playlistData;
+
         private Label nameLabel;
         private Label descLabel;
 
-        public PlaylistCard(String name, String description, List<Song> songs, ImageView coverView) {
+        public PlaylistCard(String name, String description, List<Song> songsInDisplay, ImageView coverView) {
             super(20);
-            this.songs = songs;
             this.setPadding(new Insets(30));
             this.getStyleClass().add("playlist-card");
             this.setAlignment(Pos.CENTER_LEFT);
@@ -819,7 +972,7 @@ public class ProfileView {
             nameLabel = new Label(name);
             nameLabel.getStyleClass().add("playlist-name");
             nameLabel.setStyle("-fx-font-size: 26px; -fx-font-weight: bold;");
-            descLabel = new Label(description == null || description.isEmpty() ? "No description" : description);
+            descLabel = new Label(description);
             descLabel.getStyleClass().add("playlist-description");
             descLabel.setStyle("-fx-font-size: 18px;");
             info.getChildren().addAll(nameLabel, descLabel);
@@ -827,24 +980,20 @@ public class ProfileView {
 
             this.getChildren().addAll(coverView, info);
 
-            // Event klik pada card
             this.setOnMouseClicked(
                     e -> {
-                        if (!this.getSongs().isEmpty()) {
-                            rightBox.getChildren().setAll(showMusicPlayerPanel(this.getSongs().get(0), this.getSongs()));
+                        Playlist clickedPlaylist = user.getPlaylists().stream()
+                                                      .filter(p -> p.getName().equals(name))
+                                                      .findFirst()
+                                                      .orElse(null);
+
+                        if (clickedPlaylist != null) {
+                            stopAndDisposeProfileMediaPlayer();
+                            rightBox.getChildren().setAll(showMusicPlayerPanel(clickedPlaylist));
                         } else {
-                            System.out.println("Playlist is empty, cannot play.");
-                            // Opsional: Tampilkan pesan ke pengguna atau panel kosong
+                            System.out.println("Error: Playlist " + name + " not found in user's data.");
                         }
                     });
-        }
-
-        public List<Song> getSongs() {
-            return songs;
-        }
-
-        public void addSongs(List<Song> newSongs) {
-            songs.addAll(newSongs);
         }
     }
 }

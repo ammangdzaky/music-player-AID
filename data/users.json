@@ -3,49 +3,57 @@
     "userName": "ajijah1304",
     "nickName": "ajizz",
     "password": "12345ajiz",
-    "profileImagePath": "/images/fotoprofileUser/ajijah1304.png"
+    "profileImagePath": "/images/fotoprofileUser/ajijah1304.png",
+    "playlists": []
   },
   {
     "userName": "bamgyuuu",
     "nickName": "bamie",
     "password": "bamie1234",
-    "profileImagePath": "/images/default_avatar.jpg"
+    "profileImagePath": "/images/default_avatar.jpg",
+    "playlists": []
   },
   {
     "userName": "hackerRank",
     "nickName": "progrm",
     "password": "12345678",
-    "profileImagePath": "/images/fotoprofileUser/hackerRank.jpg"
+    "profileImagePath": "/images/fotoprofileUser/hackerRank.jpg",
+    "playlists": []
   },
   {
     "userName": "crowsyl",
     "nickName": "sulis",
     "password": "12345678",
-    "profileImagePath": "/images/fotoprofileUser/crowsyl.jpg"
+    "profileImagePath": "/images/fotoprofileUser/crowsyl.jpg",
+    "playlists": []
   },
   {
     "userName": "Soyaaas",
     "nickName": "indir",
     "password": "12345678",
-    "profileImagePath": "/images/fotoprofileUser/Soyaaas.png"
+    "profileImagePath": "/images/fotoprofileUser/Soyaaas.png",
+    "playlists": []
   },
   {
     "userName": "bjirmaneh",
     "nickName": "anjaygurinjay",
     "password": "12345678",
-    "profileImagePath": "/images/default_avatar.jpg"
+    "profileImagePath": "/images/default_avatar.jpg",
+    "playlists": []
   },
   {
     "userName": "AJIJAH304",
     "nickName": "4ever",
     "password": "12345678",
-    "profileImagePath": "/images/default_avatar.jpg"
+    "profileImagePath": "/images/default_avatar.jpg",
+    "playlists": []
   },
   {
     "userName": "dewi",
     "nickName": "@coulde",
     "password": "12345678",
-    "profileImagePath": "/images/default_avatar.jpg"
+    "profileImagePath": "/images/default_avatar.jpg",
+    "playlists": []
   },
   {
     "userName": "a",
@@ -53,5 +61,65 @@
     "password": "a",
     "profileImagePath": "/images/default_avatar.jpg",
     "playlists": []
+  },
+  {
+    "userName": "Dzaky",
+    "nickName": "Dzaky",
+    "password": "Dzaky12345",
+    "profileImagePath": "C:\\Users\\Dzaky\\Pictures\\Screenshots\\coverKota.jpg",
+    "playlists": [
+      {
+        "id": "18b580f0-85c1-44ac-956d-05d251e61682",
+        "name": "fav",
+        "ownerId": "Dzaky",
+        "songIds": [
+          "3",
+          "2",
+          "7"
+        ],
+        "type": "Standard"
+      },
+      {
+        "id": "8db91560-f772-4313-ae84-79e6ae0a318e",
+        "name": "ghibli",
+        "ownerId": "Dzaky",
+        "songIds": [
+          "7"
+        ],
+        "type": "Standard"
+      },
+      {
+        "id": "17371c4a-2d76-4d8b-97fc-6def9db1944a",
+        "name": "Smart",
+        "ownerId": "Dzaky",
+        "songIds": [],
+        "type": "Smart",
+        "genreCriteria": "Metal"
+      },
+      {
+        "id": "cc30805a-1945-420c-ba2e-8ae8ad4104cb",
+        "name": "Genre Clasical",
+        "ownerId": "Dzaky",
+        "songIds": [],
+        "type": "Smart",
+        "genreCriteria": "Classical"
+      },
+      {
+        "id": "d473ee20-ebd2-43a9-858f-41c9a74649bd",
+        "name": "POP",
+        "ownerId": "Dzaky",
+        "songIds": [],
+        "type": "Smart",
+        "genreCriteria": "Pop"
+      },
+      {
+        "id": "0aad4d69-985c-41e1-a6a3-f79cea7ece2d",
+        "name": "Folk",
+        "ownerId": "Dzaky",
+        "songIds": [],
+        "type": "Smart",
+        "genreCriteria": "Folk"
+      }
+    ]
   }
 ]

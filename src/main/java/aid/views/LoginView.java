@@ -6,6 +6,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.Priority; // Import Priority
 
 public class LoginView {
     public TextField nickField = new TextField();
@@ -22,7 +23,8 @@ public class LoginView {
 
         nickField.setPromptText("Username");
         passField.setPromptText("Password");
-        loginBtn.setMaxWidth(300);
+        loginBtn.setMaxWidth(300); // Batasi lebar tombol
+        loginBtn.setPrefHeight(40); // Beri tinggi preferensi
 
         loginMessageLabel.setText("");
         loginMessageLabel.setWrapText(true);
@@ -35,14 +37,21 @@ public class LoginView {
         container.setPadding(new Insets(30));
         container.getStyleClass().add("container");
         container.setMaxWidth(350);
-        container.setMaxHeight(350);
+        // container.setMaxHeight(350); // <-- KOMENTARI BARIS INI (jika ada)
 
-        root = new VBox(20, logo, container, toRegisterLabel);
+        root = new VBox(20); // Spasi antara elemen utama
+        root.getChildren().addAll(logo, container, toRegisterLabel);
         root.setAlignment(Pos.CENTER);
+        // root.setPadding(new Insets(50)); // Opsional: Tambahkan padding di root jika perlu ruang di sekitar elemen
+        VBox.setVgrow(container, Priority.NEVER); // Pastikan container tidak terlalu 'tumbuh'
+
+        // Pastikan root bisa menangkap event jika ada masalah z-index, meskipun jarang dibutuhkan
+        root.setPickOnBounds(true);
     }
 
     public Scene getScene() {
-        Scene scene = new Scene(root, 400, 300);
+        // Scene scene = new Scene(root, 400, 300); // Hapus ukuran tetap ini
+        Scene scene = new Scene(root); // Biarkan Scene beradaptasi dengan ukuran root
         scene.getStylesheets().add(getClass().getResource("/styles/LOGstyle.css").toExternalForm());
         return scene;
     }
