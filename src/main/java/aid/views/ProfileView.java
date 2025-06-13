@@ -446,14 +446,17 @@ public class ProfileView {
                 } else {
                     setText(song.title + " - " + song.artist);
                     try {
-                        InputStream coverStream = getClass().getResourceAsStream("/" + song.cover);
+                        // MODIFIKASI INI: Tambahkan prefiks "images/" di sini
+                        InputStream coverStream = getClass().getResourceAsStream("/images/" + song.cover);
                         if (coverStream != null) {
                             imageView.setImage(new Image(coverStream, 32, 32, true, true));
                         } else {
-                            imageView.setImage(null);
+                            System.err.println("Cover image not found for song: " + song.title + " at /images/" + song.cover);
+                            imageView.setImage(null); // Atau set ke gambar placeholder
                         }
                     } catch (Exception e) {
-                        imageView.setImage(null);
+                        System.err.println("Error loading cover image for " + song.title + ": " + e.getMessage());
+                        imageView.setImage(null); // Atau set ke gambar placeholder
                     }
                     imageView.setFitWidth(32);
                     imageView.setFitHeight(32);
@@ -596,15 +599,19 @@ public class ProfileView {
     public void addPlaylist(String name, String description, ObservableList<Song> songs) {
         String cover = (songs != null && !songs.isEmpty() && songs.get(0).cover != null)
                 ? songs.get(0).cover
-                : "images/default_cover.png";
+                : "default_cover.png"; // Hapus "images/" dari sini
 
         ImageView coverView = new ImageView();
         try {
-            InputStream coverStream = getClass().getResourceAsStream("/" + cover);
+            // MODIFIKASI INI: Tambahkan prefiks "images/" di sini
+            InputStream coverStream = getClass().getResourceAsStream("/images/" + cover);
             if (coverStream != null) {
                 coverView.setImage(new Image(coverStream));
+            } else {
+                System.err.println("Cover image not found for playlist: /images/" + cover);
             }
         } catch (Exception e) {
+            System.err.println("Error loading cover image for playlist: " + e.getMessage());
             coverView.setImage(null);
         }
         coverView.setFitWidth(120);
@@ -674,7 +681,8 @@ public class ProfileView {
             if (player[0] != null)
                 player[0].stop();
             try {
-                String resource = getClass().getResource("/" + playlist.get(songIndex[0]).file).toExternalForm();
+                // MODIFIKASI INI: Tambahkan prefiks "songs/" di sini
+                String resource = getClass().getResource("/songs/" + playlist.get(songIndex[0]).file).toExternalForm();
                 Media media = new Media(resource);
                 player[0] = new MediaPlayer(media);
                 player[0].setVolume(1.0);
