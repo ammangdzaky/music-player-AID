@@ -1,5 +1,6 @@
 package aid.views;
 
+import aid.controllers.HomeController; // Import HomeController
 import aid.controllers.ProfileController;
 import aid.models.*;
 import javafx.application.Application;
@@ -70,6 +71,7 @@ public class ProfileView {
                 logoView = new ImageView();
                 logoView.setFitWidth(140);
                 logoView.setFitHeight(70);
+                System.err.println("Warning: Logo2.png not found in resources.");
             }
         } catch (Exception e) {
             System.err.println("Error loading logo: " + e.getMessage());
@@ -85,7 +87,11 @@ public class ProfileView {
         // HOME Button - dengan error handling
         Button homeButton = createIconButton("/images/iconHome.png", "Home");
         homeButton.setPadding(new Insets(10, 25, 0, 25));
-        homeButton.setOnAction(e -> System.out.println("kembali ke home scene"));
+        // --- PERUBAHAN DI SINI UNTUK NAVIGASI KE HOME ---
+        homeButton.setOnAction(e -> {
+            controller.goToHome(user); // Panggil metode di ProfileController untuk navigasi ke Home
+        });
+        // --- AKHIR PERUBAHAN ---
 
         // Setting Button - dengan error handling
         Button settingButton = createIconButton("/images/iconSetting.png", "Settings");
@@ -128,12 +134,16 @@ public class ProfileView {
                     InputStream profileStream = getClass().getResourceAsStream(user.getProfileImagePath());
                     if (profileStream != null) {
                         profileImageView.setImage(new Image(profileStream));
+                    } else {
+                        System.err.println("Warning: Profile image not found at " + user.getProfileImagePath());
                     }
                 }
             } else {
                 InputStream profileStream = getClass().getResourceAsStream("/images/indii.jpg");
                 if (profileStream != null) {
                     profileImageView.setImage(new Image(profileStream));
+                } else {
+                    System.err.println("Warning: Default profile image /images/indii.jpg not found.");
                 }
             }
         } catch (Exception e) {
@@ -275,14 +285,14 @@ public class ProfileView {
             if (cssStream != null) {
                 scene.getStylesheets().add(getClass().getResource("/styles/profileStyle.css").toExternalForm());
             } else {
-                System.err.println("Warning: profileStyle.css not found");
+                System.err.println("Warning: profileStyle.css not found.");
             }
         } catch (Exception e) {
             System.err.println("Error loading CSS: " + e.getMessage());
         }
 
         this.mainScene = scene;
-        primaryStage.setTitle("AID MUSIC");
+        primaryStage.setTitle("AID MUSIC - Profile");
         primaryStage.setScene(scene);
         primaryStage.setFullScreen(true);
         primaryStage.show();
@@ -302,11 +312,13 @@ public class ProfileView {
                 imageView.setFitWidth(40);
                 imageView.setFitHeight(40);
                 button.setGraphic(imageView);
+            } else {
+                System.err.println("Warning: Icon " + iconPath + " not found.");
+                button.setText(tooltipText); // Fallback ke text jika icon tidak ditemukan
             }
         } catch (Exception e) {
             System.err.println("Error loading icon " + iconPath + ": " + e.getMessage());
-            // Fallback ke text jika icon tidak ditemukan
-            button.setText(tooltipText);
+            button.setText(tooltipText); // Fallback ke text jika terjadi error
         }
         button.getStyleClass().add("icon-button");
         return button;
@@ -394,6 +406,8 @@ public class ProfileView {
             InputStream cssStream = getClass().getResourceAsStream("/styles/profileStyle.css");
             if (cssStream != null) {
                 settingScene.getStylesheets().add(getClass().getResource("/styles/profileStyle.css").toExternalForm());
+            } else {
+                System.err.println("Warning: profileStyle.css not found for settings.");
             }
         } catch (Exception ex) {
             System.err.println("Error loading CSS for settings: " + ex.getMessage());
@@ -444,16 +458,20 @@ public class ProfileView {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    setText(song.title + " - " + song.artist);
+                    // MENGGUNAKAN GETTER
+                    setText(song.getTitle() + " - " + song.getArtist());
                     try {
-                        InputStream coverStream = getClass().getResourceAsStream("/" + song.cover);
+                        // MODIFIKASI INI: Tambahkan prefiks "images/" di sini
+                        InputStream coverStream = getClass().getResourceAsStream("/images/" + song.getCover());
                         if (coverStream != null) {
                             imageView.setImage(new Image(coverStream, 32, 32, true, true));
                         } else {
-                            imageView.setImage(null);
+                            System.err.println("Cover image not found for song: " + song.getTitle() + " at /images/" + song.getCover());
+                            imageView.setImage(null); // Atau set ke gambar placeholder
                         }
                     } catch (Exception e) {
-                        imageView.setImage(null);
+                        System.err.println("Error loading cover image for " + song.getTitle() + ": " + e.getMessage());
+                        imageView.setImage(null); // Atau set ke gambar placeholder
                     }
                     imageView.setFitWidth(32);
                     imageView.setFitHeight(32);
@@ -501,6 +519,8 @@ public class ProfileView {
             InputStream cssStream = getClass().getResourceAsStream("/styles/profileStyle.css");
             if (cssStream != null) {
                 popupScene.getStylesheets().add(getClass().getResource("/styles/profileStyle.css").toExternalForm());
+            } else {
+                System.err.println("Warning: profileStyle.css not found for add playlist.");
             }
         } catch (Exception ex) {
             System.err.println("Error loading CSS for add playlist: " + ex.getMessage());
@@ -594,17 +614,22 @@ public class ProfileView {
 
     // Overloaded method to add playlist with a list of songs
     public void addPlaylist(String name, String description, ObservableList<Song> songs) {
-        String cover = (songs != null && !songs.isEmpty() && songs.get(0).cover != null)
-                ? songs.get(0).cover
-                : "images/default_cover.png";
+        // MENGGUNAKAN GETTER
+        String cover = (songs != null && !songs.isEmpty() && songs.get(0).getCover() != null)
+                ? songs.get(0).getCover()
+                : "default_cover.png"; // Hapus "images/" dari sini
 
         ImageView coverView = new ImageView();
         try {
-            InputStream coverStream = getClass().getResourceAsStream("/" + cover);
+            // MODIFIKASI INI: Tambahkan prefiks "images/" di sini
+            InputStream coverStream = getClass().getResourceAsStream("/images/" + cover);
             if (coverStream != null) {
                 coverView.setImage(new Image(coverStream));
+            } else {
+                System.err.println("Cover image not found for playlist: /images/" + cover);
             }
         } catch (Exception e) {
+            System.err.println("Error loading cover image for playlist: " + e.getMessage());
             coverView.setImage(null);
         }
         coverView.setFitWidth(120);
@@ -625,9 +650,10 @@ public class ProfileView {
         root.setPrefHeight(600);
 
         // Header: Judul & Artis
-        Label title = new Label(song.title);
+        // MENGGUNAKAN GETTER
+        Label title = new Label(song.getTitle());
         title.getStyleClass().add("player-title");
-        Label artist = new Label(song.artist);
+        Label artist = new Label(song.getArtist());
         artist.getStyleClass().add("player-artist");
 
         VBox info = new VBox(title, artist);
@@ -641,7 +667,8 @@ public class ProfileView {
             @Override
             protected void updateItem(Song item, boolean empty) {
                 super.updateItem(item, empty);
-                setText((empty || item == null) ? null : item.title + " - " + item.artist);
+                // MENGGUNAKAN GETTER
+                setText((empty || item == null) ? null : item.getTitle() + " - " + item.getArtist());
             }
         });
 
@@ -674,7 +701,8 @@ public class ProfileView {
             if (player[0] != null)
                 player[0].stop();
             try {
-                String resource = getClass().getResource("/" + playlist.get(songIndex[0]).file).toExternalForm();
+                // MENGGUNAKAN GETTER
+                String resource = getClass().getResource("/songs/" + playlist.get(songIndex[0]).getFile()).toExternalForm();
                 Media media = new Media(resource);
                 player[0] = new MediaPlayer(media);
                 player[0].setVolume(1.0);
@@ -695,8 +723,9 @@ public class ProfileView {
                     }
                 });
                 player[0].play();
-                title.setText(playlist.get(songIndex[0]).title);
-                artist.setText(playlist.get(songIndex[0]).artist);
+                // MENGGUNAKAN GETTER
+                title.setText(playlist.get(songIndex[0]).getTitle());
+                artist.setText(playlist.get(songIndex[0]).getArtist());
                 songListView.getSelectionModel().select(songIndex[0]);
             } catch (Exception e) {
                 System.err.println("Gagal memutar lagu: " + e.getMessage());
@@ -750,7 +779,16 @@ public class ProfileView {
             simpan.getStyleClass().add("button");
 
             Scene popupScene = new Scene(popupLayout, 320, 280);
-            popupScene.getStylesheets().add(getClass().getResource("/styles/profileStyle.css").toExternalForm());
+            try {
+                InputStream cssStream = getClass().getResourceAsStream("/styles/profileStyle.css");
+                if (cssStream != null) {
+                    popupScene.getStylesheets().add(getClass().getResource("/styles/profileStyle.css").toExternalForm());
+                } else {
+                    System.err.println("Warning: profileStyle.css not found for add song popup.");
+                }
+            } catch (Exception ex) {
+                System.err.println("Error loading CSS for add song popup: " + ex.getMessage());
+            }
             Stage popupStage = new Stage();
             popupStage.initOwner(primaryStage);
             popupStage.initModality(Modality.WINDOW_MODAL);
@@ -791,7 +829,14 @@ public class ProfileView {
 
             // Event klik pada card
             this.setOnMouseClicked(
-                    e -> rightBox.getChildren().setAll(showMusicPlayerPanel(this.getSongs().get(0), this.getSongs())));
+                    e -> {
+                        if (!this.getSongs().isEmpty()) {
+                            rightBox.getChildren().setAll(showMusicPlayerPanel(this.getSongs().get(0), this.getSongs()));
+                        } else {
+                            System.out.println("Playlist is empty, cannot play.");
+                            // Opsional: Tampilkan pesan ke pengguna atau panel kosong
+                        }
+                    });
         }
 
         public List<Song> getSongs() {
@@ -802,5 +847,4 @@ public class ProfileView {
             songs.addAll(newSongs);
         }
     }
-
 }

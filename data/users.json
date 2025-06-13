@@ -53,5 +53,12 @@
     "password": "112233",
     "profileImagePath": "/images/default_avatar.jpg",
     "playlists": []
+  },
+  {
+    "userName": "a",
+    "nickName": "a",
+    "password": "a",
+    "profileImagePath": "/images/default_avatar.jpg",
+    "playlists": []
   }
 ]

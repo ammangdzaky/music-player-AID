@@ -1,4 +1,734 @@
 package aid.views;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane; // Tidak digunakan, bisa dihapus
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color; // Tidak digunakan, bisa dihapus
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle; // Tidak digunakan, bisa dihapus
+import javafx.stage.Stage;
+import javafx.scene.input.KeyCode;
+import javafx.util.Duration;
+
+import org.controlsfx.control.Notifications; // Import ini mungkin tidak digunakan lagi, bisa dihapus jika tidak ada notifikasi ControlsFX
+import animatefx.animation.*; // Import ini mungkin tidak digunakan lagi jika hanya Shake/Tada
+
+import aid.models.Song;
+
+import java.io.InputStream;
+import java.util.List;
+
 public class HomeView {
+
+    private Stage stage;
+    private Scene scene; // <-- PASTIKAN DEKLARASI INI ADA
+
+    private ListView<Song> songListView;
+    private ListView<String> genreListView;
+    private Label currentSongTitleLabel;
+    private Label currentSongArtistLabel;
+    private ImageView albumArtImageView;
+    private Button playPauseButton;
+    private TextField searchField;
+    private Button prevButton;
+    private Button nextButton;
+    private Button shuffleButton;
+    private Button repeatButton;
+    private Slider volumeSlider;
+
+    // Komponen untuk pesan notifikasi
+    private VBox messageBox;
+    private Label messageLabel;
+
+    // Komponen baru untuk progress bar dan label waktu
+    private ProgressBar songProgressBar;
+    private Label currentTimeLabel;
+    private Label totalTimeLabel;
+
+    // Komponen untuk tombol kecepatan
+    private Button speed025xButton;
+    private Button speed05xButton;
+    private Button speed075xButton;
+    private Button speed1xButton;
+    private Button speed125xButton;
+    private Button speed15xButton;
+    private Button speed175xButton;
+    private Button speed2xButton;
+
+    // Tombol Home (Dideklarasikan di sini)
+    private Button homeButton;
+    // --- PERUBAHAN DI SINI: Deklarasi tombol profil ---
+    private Button profileButton;
+    // --- AKHIR PERUBAHAN ---
+
+
+    // Callback untuk controller (akan diatur oleh HomeController)
+    private SeekCallback seekCallback;
+
+
+    private static final String BG_PRIMARY_DARK = "#000000";
+    private static final String ACCENT_YELLOW = "#FFD700";
+    private static final String BG_CARD_DARK = "#1a1a1a";
+    private static final String TEXT_LIGHT = "#FFFFFF";
+    private static final String TEXT_MEDIUM_GRAY = "#AAAAAA";
+    private static final String BORDER_YELLOW = ACCENT_YELLOW;
+
+    private static final String FONT_SIZE_SMALL = "12px";
+    private static final String FONT_SIZE_MEDIUM = "14px";
+    private static final String FONT_SIZE_LARGE = "18px";
+    private static final String FONT_SIZE_XLARGE = "24px";
+
+    private static final String BORDER_RADIUS_SM = "5px";
+    private static final String BORDER_RADIUS_MD = "10px";
+    private static final String BORDER_RADIUS_LG = "15px";
+
+
+    // Modifikasi konstruktor untuk menerima Stage
+    public HomeView(Stage stage) {
+        this.stage = stage;
+        initializeUI();
+    }
+
+    // Antarmuka callback untuk seeking
+    public interface SeekCallback {
+        void onSeek(double progress);
+    }
+
+    public void setSeekCallback(SeekCallback callback) {
+        this.seekCallback = callback;
+    }
+
+    private void initializeUI() {
+        BorderPane contentPane = new BorderPane();
+        contentPane.getStyleClass().add("root-pane");
+        contentPane.setStyle("-fx-border-color: " + BORDER_YELLOW + "; -fx-border-width: 3px; -fx-border-radius: " + BORDER_RADIUS_LG + ";");
+
+        HBox header = createHeader();
+        contentPane.setTop(header);
+
+        VBox sidebar = createSidebar();
+        contentPane.setLeft(sidebar);
+
+        HBox mainContentArea = createMainContentArea();
+        contentPane.setCenter(mainContentArea);
+
+        VBox playerControls = createPlayerControls();
+        contentPane.setBottom(playerControls);
+
+        // Inisialisasi kotak pesan
+        messageLabel = new Label();
+        messageBox = new VBox(messageLabel);
+        messageBox.getStyleClass().add("message-box");
+        messageBox.setVisible(false);
+        messageBox.setManaged(false);
+        messageBox.setAlignment(Pos.CENTER);
+
+
+        // Buat StackPane sebagai root utama scene
+        StackPane root = new StackPane();
+        root.getChildren().addAll(contentPane, messageBox);
+        StackPane.setAlignment(messageBox, Pos.TOP_CENTER);
+        StackPane.setMargin(messageBox, new Insets(20, 0, 0, 0));
+
+        // <--- PERBAIKAN DI SINI: Tetapkan Scene ke field kelas 'scene'
+        this.scene = new Scene(root, 1024, 768);
+        this.scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
+        this.scene.getStylesheets().add(getClass().getResource("/styles/homeStyle.css").toExternalForm());
+
+        // stage.setTitle("AID Music Player - Home"); // Akan diatur oleh HomeController
+        // stage.setScene(scene); // Akan diatur oleh HomeController
+
+        // stage.setFullScreen(true); // Akan diatur oleh HomeController
+        stage.setFullScreenExitHint(""); // Biarkan ini
+
+        scene.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                stage.setFullScreen(false);
+                showMessage("Keluar dari mode Full Screen.", "info");
+            }
+        });
+
+        // stage.show(); // Akan diatur oleh HomeController
+    }
+
+    // <--- PERBAIKAN DI SINI: Tambahkan metode getScene()
+    public Scene getScene() {
+        return this.scene;
+    }
+
+    private HBox createHeader() {
+        HBox header = new HBox(10);
+        header.setPadding(new Insets(10, 20, 10, 10));
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.getStyleClass().add("header-pane");
+
+        HBox leftNavIcons = new HBox(10);
+        leftNavIcons.setAlignment(Pos.CENTER_LEFT);
+        
+        // Inisialisasi homeButton di sini
+        homeButton = createIconButton("🏠", FONT_SIZE_XLARGE, TEXT_LIGHT); 
+        
+        // --- PERUBAHAN DI SINI: Inisialisasi tombol profil ---
+        profileButton = createIconButton("👤", FONT_SIZE_XLARGE, TEXT_LIGHT);
+        // --- AKHIR PERUBAHAN ---
+
+        leftNavIcons.getChildren().addAll(
+            homeButton, // Menambahkan homeButton
+            profileButton // Menambahkan tombol profil
+        );
+        leftNavIcons.getChildren().forEach(node -> {
+            if (node instanceof Button) {
+                node.getStyleClass().add("header-icon-button");
+            }
+        });
+
+        Region spacerLeft = new Region();
+        HBox.setHgrow(spacerLeft, Priority.ALWAYS);
+
+        ImageView appLogoImageView = null;
+        try {
+            appLogoImageView = new ImageView(new Image(getClass().getResourceAsStream("/images/Logo2.jpg"))); // Pastikan path benar
+            appLogoImageView.setFitWidth(200);
+            appLogoImageView.setFitHeight(60);
+            appLogoImageView.setPreserveRatio(true);
+            appLogoImageView.getStyleClass().add("app-logo-image");
+        } catch (Exception e) {
+            System.err.println("Error loading logo.jpg: " + e.getMessage());
+            Label logoFallback = new Label("AID music");
+            logoFallback.setStyle("-fx-font-family: 'Arial Black', sans-serif; -fx-font-size: 20px; -fx-text-fill: #FFD700;");
+            appLogoImageView = new ImageView();
+        }
+
+        searchField = new TextField();
+        searchField.setPromptText("Search...");
+        searchField.getStyleClass().add("search-field");
+
+        Button searchButton = createIconButton("🔍", FONT_SIZE_LARGE, TEXT_LIGHT);
+        searchButton.getStyleClass().add("search-button");
+
+        Runnable performSearch = () -> {
+            showMessage("Mencari: " + searchField.getText().trim(), "info");
+            new Shake(searchField).play();
+        };
+        searchButton.setOnAction(e -> performSearch.run());
+        searchField.setOnAction(e -> performSearch.run());
+
+        HBox searchArea = new HBox(5);
+        searchArea.setAlignment(Pos.CENTER_RIGHT);
+        searchArea.getChildren().addAll(searchField, searchButton);
+
+        Button exitButton = createIconButton("✖", FONT_SIZE_LARGE, TEXT_LIGHT);
+        exitButton.getStyleClass().add("exit-button");
+        exitButton.setOnAction(e -> Platform.exit());
+
+        header.getChildren().clear();
+        if (appLogoImageView != null) {
+            header.getChildren().addAll(leftNavIcons, spacerLeft, appLogoImageView, searchArea, exitButton);
+        } else {
+            header.getChildren().addAll(leftNavIcons, spacerLeft, searchArea, exitButton);
+        }
+
+        return header;
+    }
+
+    private Button createIconButton(String iconText, String size, String color) {
+        Label iconLabel = new Label(iconText);
+        iconLabel.setStyle("-fx-font-size: " + size + "; -fx-text-fill: " + color + ";");
+        Button button = new Button();
+        button.setGraphic(iconLabel);
+        button.setPadding(new Insets(5));
+        button.setStyle("-fx-background-color: transparent; -fx-background-radius: 50%;");
+        button.setOnMouseEntered(e -> button.setStyle(button.getStyle() + "-fx-background-color: #555555;"));
+        button.setOnMouseExited(e -> button.setStyle(button.getStyle() + "-fx-background-color: transparent;"));
+        return button;
+    }
+
+    private VBox createSidebar() {
+        VBox sidebar = new VBox(10);
+        sidebar.setPadding(new Insets(20, 10, 20, 20));
+        sidebar.setPrefWidth(200);
+        sidebar.getStyleClass().add("sidebar");
+
+        Label genreTitle = new Label("Genre");
+        genreTitle.getStyleClass().add("genre-title");
+
+        genreListView = new ListView<>();
+        genreListView.getStyleClass().add("genre-list");
+        genreListView.setPrefHeight(200);
+
+        sidebar.getChildren().addAll(genreTitle, genreListView);
+        return sidebar;
+    }
+
+    // Metode createGenreButton tidak dipanggil di HomeView, mungkin di controller atau di tempat lain?
+    // Jika tidak digunakan, bisa dihapus atau diabaikan.
+    private Button createGenreButton(String text) {
+        Button button = new Button(text);
+        button.setPrefWidth(160);
+        button.setPrefHeight(35);
+        button.setAlignment(Pos.CENTER_LEFT);
+        button.getStyleClass().add("genre-button");
+
+        if (text.equals("POP")) {
+            button.getStyleClass().add("genre-button-active");
+            new Tada(button).play();
+        }
+        return button;
+    }
+
+    private HBox createMainContentArea() {
+        HBox mainContentArea = new HBox(20);
+        mainContentArea.setPadding(new Insets(20));
+        mainContentArea.getStyleClass().add("main-content-area");
+
+        VBox similarSongsCol = createSimilarSongsColumn();
+        HBox.setHgrow(similarSongsCol, Priority.ALWAYS);
+
+        VBox albumAndPlayerDetail = createAlbumAndPlayerDetailColumn();
+        albumAndPlayerDetail.setPrefWidth(300);
+
+        mainContentArea.getChildren().addAll(similarSongsCol, albumAndPlayerDetail);
+        return mainContentArea;
+    }
+
+    private VBox createSimilarSongsColumn() {
+        VBox column = new VBox(15);
+        column.getStyleClass().addAll("content-card", "similar-songs-card");
+        column.setPadding(new Insets(20)); // Kembali ke padding 20px default content-card
+
+        HBox header = new HBox();
+        Label title = new Label("DAFTAR LAGU"); // Mengganti "Lagu Serupa" menjadi "DAFTAR LAGU" (UPPERCASE)
+        title.getStyleClass().add("card-title");
+        header.getChildren().add(title);
+        header.setAlignment(Pos.CENTER); // Menempatkan teks di tengah
+        header.setPadding(new Insets(0, 0, 10, 0));
+
+        column.getChildren().add(header);
+
+        songListView = new ListView<>();
+        songListView.getStyleClass().add("song-list");
+        songListView.setCellFactory(param -> new javafx.scene.control.ListCell<Song>() {
+            private final HBox cellLayout = new HBox(10);
+            private final ImageView songAlbumArt = new ImageView();
+            private final VBox textInfo = new VBox(2);
+            private final Label titleLabel = new Label();
+            private final Label artistDurationLabel = new Label();
+            private final Label albumLabel = new Label();
+
+            { // Inisialisasi awal untuk setiap cell
+                songAlbumArt.setFitWidth(40);
+                songAlbumArt.setFitHeight(40);
+                songAlbumArt.setClip(new Circle(20, 20, 20));
+
+                titleLabel.getStyleClass().add("song-title-list");
+                artistDurationLabel.getStyleClass().add("song-artist-duration-list");
+                albumLabel.getStyleClass().add("song-album-list");
+                albumLabel.setMaxWidth(150);
+                albumLabel.setWrapText(true);
+
+                textInfo.getChildren().addAll(titleLabel, artistDurationLabel);
+
+                cellLayout.setAlignment(Pos.CENTER_LEFT);
+                cellLayout.setPadding(new Insets(5, 0, 5, 0));
+                HBox.setHgrow(textInfo, Priority.ALWAYS);
+
+                cellLayout.getChildren().addAll(songAlbumArt, textInfo, albumLabel);
+            }
+
+            @Override
+            protected void updateItem(Song song, boolean empty) {
+                super.updateItem(song, empty);
+                if (empty || song == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    titleLabel.setText(song.getTitle());
+                    artistDurationLabel.setText(song.getArtist() + " • " + formatDuration(song.getDurationSeconds()));
+                    albumLabel.setText(song.getAlbum());
+
+                    try {
+                        // Menggunakan getCover()
+                        InputStream coverStream = getClass().getResourceAsStream("/images/" + song.getCover());
+                        if (coverStream != null) {
+                            songAlbumArt.setImage(new Image(coverStream));
+                        } else {
+                            System.err.println("Error loading cover art for " + song.getTitle() + ": /images/" + song.getCover() + " not found.");
+                            songAlbumArt.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error loading cover art for " + song.getTitle() + ": " + e.getMessage());
+                        songAlbumArt.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+                    }
+                    setGraphic(cellLayout);
+                }
+            }
+        });
+
+        column.getChildren().add(songListView);
+        return column;
+    }
+
+    private VBox createAlbumAndPlayerDetailColumn() {
+        VBox column = new VBox(20);
+        column.getStyleClass().addAll("content-card", "album-detail-card");
+        column.setPadding(new Insets(20));
+
+        VBox albumDetail = new VBox(10);
+        albumDetail.setAlignment(Pos.CENTER);
+        albumDetail.setPadding(new Insets(0, 0, 20, 0));
+
+        albumArtImageView = new ImageView();
+        albumArtImageView.setFitWidth(260);
+        albumArtImageView.setFitHeight(260);
+        albumArtImageView.getStyleClass().add("album-art");
+        try {
+            albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+        } catch (Exception e) {
+            System.err.println("Error loading default_album_art.png: " + e.getMessage());
+        }
+
+        currentSongTitleLabel = new Label("No Song Playing");
+        currentSongTitleLabel.getStyleClass().add("album-title");
+
+        currentSongArtistLabel = new Label("");
+        currentSongArtistLabel.getStyleClass().add("album-artist-duration");
+
+        albumDetail.getChildren().addAll(albumArtImageView, currentSongTitleLabel, currentSongArtistLabel);
+        column.getChildren().add(albumDetail);
+
+        HBox playerControls = new HBox(15);
+        playerControls.setAlignment(Pos.CENTER);
+        playerControls.setPadding(new Insets(10));
+        playerControls.getChildren().addAll(
+            shuffleButton = createPlayerRoundButton("🔀"),
+            prevButton = createPlayerRoundButton("⏮️"),
+            playPauseButton = createPlayerRoundButton("▶️"),
+            nextButton = createPlayerRoundButton("⏭️"),
+            repeatButton = createPlayerRoundButton("🔁")
+        );
+        column.getChildren().add(playerControls);
+
+        HBox volumeControl = new HBox(10);
+        volumeControl.setAlignment(Pos.CENTER);
+        Label volumeIcon = new Label("🔊");
+        volumeIcon.setStyle("-fx-font-size: 20px; -fx-text-fill: " + TEXT_LIGHT + ";");
+        volumeSlider = new Slider(0, 100, 50);
+        volumeSlider.setPrefWidth(200);
+        volumeSlider.getStyleClass().add("volume-slider");
+        volumeControl.getChildren().addAll(volumeIcon, volumeSlider);
+        column.getChildren().add(volumeControl);
+
+        return column;
+    }
+
+    private Button createPlayerRoundButton(String iconText) {
+        Label iconLabel = new Label(iconText);
+        iconLabel.setStyle("-fx-font-size: " + FONT_SIZE_LARGE + "; -fx-text-fill: " + ACCENT_YELLOW + ";");
+        Button button = new Button();
+        button.setGraphic(iconLabel);
+        button.setPrefSize(40, 40);
+        button.getStyleClass().add("player-round-button");
+        return button;
+    }
+
+    // Metode untuk memperbarui ikon Play/Pause
+    public void updatePlayPauseButtonIcon(boolean isPlaying) {
+        Label iconLabel;
+        if (isPlaying) {
+            iconLabel = new Label("⏸");
+        } else {
+            iconLabel = new Label("▶");
+        }
+        iconLabel.setStyle("-fx-font-size: " + FONT_SIZE_LARGE + "; -fx-text-fill: " + ACCENT_YELLOW + ";");
+        playPauseButton.setGraphic(iconLabel);
+    }
+
+
+    private VBox createPlayerControls() {
+        VBox playerArea = new VBox(10);
+        playerArea.setPadding(new Insets(10, 20, 10, 20));
+        playerArea.getStyleClass().add("bottom-player-area");
+
+        songProgressBar = new ProgressBar(0.0);
+        songProgressBar.setMaxWidth(Double.MAX_VALUE);
+        songProgressBar.getStyleClass().add("song-progress-bar");
+
+        songProgressBar.setOnMousePressed(e -> {
+            if (seekCallback != null) {
+                double progress = e.getX() / songProgressBar.getWidth();
+                seekCallback.onSeek(progress);
+            }
+        });
+
+        songProgressBar.setOnMouseDragged(e -> {
+            if (seekCallback != null) {
+                double progress = e.getX() / songProgressBar.getWidth();
+                progress = Math.max(0.0, Math.min(1.0, progress));
+                seekCallback.onSeek(progress);
+            }
+        });
+
+        HBox timeLabels = new HBox();
+        currentTimeLabel = new Label("0:00");
+        currentTimeLabel.getStyleClass().add("time-label");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        totalTimeLabel = new Label("0:00");
+        totalTimeLabel.getStyleClass().add("time-label");
+        timeLabels.getChildren().addAll(currentTimeLabel, spacer, totalTimeLabel);
+
+        // Mengganti "Now Playing" mini display dengan tombol kecepatan
+        HBox speedControlsContainer = new HBox(5); // Spasi antar tombol lebih kecil agar muat 8 tombol
+        speedControlsContainer.setAlignment(Pos.CENTER);
+        
+        // Inisialisasi semua 8 tombol kecepatan
+        speed025xButton = createSpeedButton("0.25x");
+        speed05xButton = createSpeedButton("0.5x");
+        speed075xButton = createSpeedButton("0.75x");
+        speed1xButton = createSpeedButton("1x");
+        speed125xButton = createSpeedButton("1.25x");
+        speed15xButton = createSpeedButton("1.5x");
+        speed175xButton = createSpeedButton("1.75x");
+        speed2xButton = createSpeedButton("2x");
+
+        speedControlsContainer.getChildren().addAll(
+            speed025xButton, speed05xButton, speed075xButton, speed1xButton,
+            speed125xButton, speed15xButton, speed175xButton, speed2xButton
+        );
+        HBox.setHgrow(speedControlsContainer, Priority.ALWAYS); 
+        // Mengatur margin atas untuk container tombol kecepatan
+        VBox.setMargin(speedControlsContainer, new Insets(10, 0, 0, 0)); 
+
+        playerArea.getChildren().addAll(songProgressBar, timeLabels, speedControlsContainer);
+        return playerArea;
+    }
+
+    // Metode helper untuk membuat tombol kecepatan
+    private Button createSpeedButton(String text) {
+        Button button = new Button(text);
+        button.getStyleClass().add("speed-button");
+        return button;
+    }
+
+    // Metode untuk memperbarui visual tombol kecepatan yang aktif
+    public void updateSpeedButtonVisual(double activeRate) {
+        Platform.runLater(() -> {
+            // Hapus kelas aktif dari semua tombol
+            speed025xButton.getStyleClass().remove("speed-button-active");
+            speed05xButton.getStyleClass().remove("speed-button-active");
+            speed075xButton.getStyleClass().remove("speed-button-active");
+            speed1xButton.getStyleClass().remove("speed-button-active");
+            speed125xButton.getStyleClass().remove("speed-button-active");
+            speed15xButton.getStyleClass().remove("speed-button-active");
+            speed175xButton.getStyleClass().remove("speed-button-active");
+            speed2xButton.getStyleClass().remove("speed-button-active");
+
+            // Tambahkan kelas aktif ke tombol yang sesuai
+            if (activeRate == 0.25) {
+                speed025xButton.getStyleClass().add("speed-button-active");
+            } else if (activeRate == 0.5) {
+                speed05xButton.getStyleClass().add("speed-button-active");
+            } else if (activeRate == 0.75) {
+                speed075xButton.getStyleClass().add("speed-button-active");
+            } else if (activeRate == 1.0) {
+                speed1xButton.getStyleClass().add("speed-button-active");
+            } else if (activeRate == 1.25) {
+                speed125xButton.getStyleClass().add("speed-button-active");
+            } else if (activeRate == 1.5) {
+                speed15xButton.getStyleClass().add("speed-button-active");
+            } else if (activeRate == 1.75) {
+                speed175xButton.getStyleClass().add("speed-button-active");
+            } else if (activeRate == 2.0) {
+                speed2xButton.getStyleClass().add("speed-button-active");
+            }
+        });
+    }
+
+    // Metode untuk memperbarui progress bar
+    public void updateProgressBar(double progress) {
+        Platform.runLater(() -> songProgressBar.setProgress(progress));
+    }
+
+    // Metode untuk memperbarui label waktu saat ini
+    public void updateCurrentTimeLabel(String time) {
+        Platform.runLater(() -> currentTimeLabel.setText(time));
+    }
+
+    // Metode untuk memperbarui label total waktu
+    public void updateTotalTimeLabel(String time) {
+        Platform.runLater(() -> totalTimeLabel.setText(time));
+    }
+
+    // Mengembalikan metode formatDuration ke HomeView
+    private String formatDuration(int totalSeconds) {
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        return String.format("%d:%02d", minutes, seconds);
+    }
+    
+    public ListView<Song> getSongListView() {
+        return songListView;
+    }
+
+    public ListView<String> getGenreListView() {
+        return genreListView;
+    }
+
+    public TextField getSearchField() {
+        return searchField;
+    }
+
+    public Button getPlayPauseButton() {
+        return playPauseButton;
+    }
+    public Button getPrevButton() {
+        return prevButton;
+    }
+
+    public Button getNextButton() {
+        return nextButton;
+    }
+    public Button getShuffleButton() {
+        return shuffleButton;
+    }
+
+    public Button getRepeatButton() {
+        return repeatButton;
+    }
+
+    // Menambahkan getter untuk volumeSlider
+    public Slider getVolumeSlider() {
+        return volumeSlider;
+    }
+
+    // Menambahkan getter untuk tombol kecepatan
+    public Button getSpeed025xButton() { return speed025xButton; }
+    public Button getSpeed05xButton() { return speed05xButton; }
+    public Button getSpeed075xButton() { return speed075xButton; }
+    public Button getSpeed1xButton() { return speed1xButton; }
+    public Button getSpeed125xButton() { return speed125xButton; }
+    public Button getSpeed15xButton() { return speed15xButton; }
+    public Button getSpeed175xButton() { return speed175xButton; }
+    public Button getSpeed2xButton() { return speed2xButton; }
+
+    // Menambahkan getter untuk Home Button
+    public Button getHomeButton() { return homeButton; }
+
+    // --- PERUBAHAN DI SINI: Getter untuk tombol profil ---
+    public Button getProfileButton() { return profileButton; }
+    // --- AKHIR PERUBAHAN ---
+
+
+    public void displaySongs(List<Song> songs) {
+        songListView.getItems().setAll(songs);
+    }
+
+    public void displayGenres(List<String> genres) {
+        genreListView.getItems().setAll(genres);
+    }
+
+    // Metode updateCurrentSongInfo tidak lagi mengupdate nowPlayingMiniLabel
+    public void updateCurrentSongInfo(Song song) {
+        if (song != null) {
+            currentSongTitleLabel.setText(song.getTitle());
+            currentSongArtistLabel.setText(song.getArtist());
+            // Logika nowPlayingMiniLabel dihapus
+            try {
+                // Menggunakan getCover()
+                InputStream coverStream = getClass().getResourceAsStream("/images/" + song.getCover());
+                if (coverStream != null) {
+                    albumArtImageView.setImage(new Image(coverStream));
+                } else {
+                    System.err.println("Error loading album art for " + song.getTitle() + ": /images/" + song.getCover() + " not found.");
+                    albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+                }
+            } catch (Exception e) {
+                System.err.println("Error loading album art for " + song.getTitle() + ": " + e.getMessage());
+                albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+            }
+        } else {
+            currentSongTitleLabel.setText("No Song Playing");
+            currentSongArtistLabel.setText("");
+            // Logika nowPlayingMiniLabel dihapus
+            albumArtImageView.setImage(new Image(getClass().getResourceAsStream("/images/default_album_art.png")));
+        }
+    }
+
+    public String getFontSizeLarge() {
+        return FONT_SIZE_LARGE;
+    }
+
+    public String getBgPrimaryDark() {
+        return BG_PRIMARY_DARK;
+    }
+
+    // --- Metode untuk mengubah visual tombol Shuffle ---
+    public void updateShuffleButtonVisual(boolean isOn) {
+        // Tidak ada perubahan kelas CSS untuk shuffle, karena ikonnya selalu kuning
+        // Anda bisa menambahkan atau menghapus kelas CSS di sini jika ada efek visual yang berbeda
+        if (isOn) {
+            shuffleButton.getStyleClass().add("shuffle-button-active"); // Contoh kelas CSS
+        } else {
+            shuffleButton.getStyleClass().remove("shuffle-button-active");
+        }
+    }
+
+    // --- Metode untuk mengubah visual tombol Repeat ---
+    public void updateRepeatButtonVisual(boolean isOn) {
+        if (isOn) {
+            repeatButton.getStyleClass().add("repeat-button-active");
+        } else {
+            repeatButton.getStyleClass().remove("repeat-button-active");
+        }
+    }
+
+    /**
+     * Menampilkan pesan notifikasi di bagian atas layar.
+     * @param message Teks pesan yang akan ditampilkan.
+     * @param type Tipe pesan (saat ini hanya "info" yang memengaruhi style default).
+     */
+    public void showMessage(String message, String type) {
+        messageLabel.setText(message);
+
+        Platform.runLater(() -> {
+            messageBox.setVisible(true);
+            messageBox.setManaged(true);
+
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(300), messageBox);
+            fadeIn.setFromValue(0.0);
+            fadeIn.setToValue(1.0);
+            fadeIn.play();
+
+            PauseTransition delay = new PauseTransition(Duration.seconds(2.0));
+            delay.setOnFinished(event -> {
+                FadeTransition fadeOut = new FadeTransition(Duration.millis(300), messageBox);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                fadeOut.setOnFinished(e -> {
+                    messageBox.setVisible(false);
+                    messageBox.setManaged(false);
+                });
+                fadeOut.play();
+            });
+            delay.play();
+        });
+    }
 }

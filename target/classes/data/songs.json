@@ -3,46 +3,80 @@
     "id": 1,
     "title": "Kota",
     "artist": "Dere",
-    "file": "songs/kota.wav",
-    "cover": "images/coverKota.jpg"
+    "album": "Berlayar",
+    "genre": "Pop",
+    "durationSeconds": 198,
+    "file": "kota.wav",
+    "cover": "coverKota.jpg"
   },
-
   {
     "id": 2,
     "title": "Did You Like Her in the Morning?",
     "artist": "Niki",
-    "file": "songs/NIKI - Did You Like Her In The Morning.wav",
-    "cover": "images/coverDidYouLikeHereInTheMorning.jpg"
+    "album": "Moonchild",
+    "genre": "R&B",
+    "durationSeconds": 217,
+    "file": "NIKI - Did You Like Her In The Morning.wav",
+    "cover": "coverDidYouLikeHereInTheMorning.jpg"
   },
-
   {
     "id": 3,
     "title": "Jatuh Suka",
     "artist": "Tulus",
-    "file": "songs/TULUS - Jatuh Suka.wav",
-    "cover": "images/jatuhSuka.jpeg"
+    "album": "Manusia",
+    "genre": "Pop",
+    "durationSeconds": 237,
+    "file": "TULUS - Jatuh Suka.wav",
+    "cover": "jatuhSuka.jpeg"
   },
-
   {
     "id": 4,
     "title": "Langit Abu-Abu",
     "artist": "Tulus",
-    "file": "songs/TULUS - Langit Abu-abu.wav",
-    "cover": "images/langitAbu-abu.jpeg"
+    "album": "Monokrom",
+    "genre": "Pop",
+    "durationSeconds": 218,
+    "file": "TULUS - Langit Abu-abu.wav",
+    "cover": "langitAbu-abu.jpeg"
   },
-
   {
     "id": 5,
     "title": "Usik",
     "artist": "Feby Putri",
-    "file": "songs/Usik - Feby Putri.wav",
-    "cover": "images/usik.jpeg"
+    "album": "Cahaya",
+    "genre": "Folk",
+    "durationSeconds": 336,
+    "file": "Usik - Feby Putri.wav",
+    "cover": "usik.jpeg"
   },
   {
     "id": 6,
     "title": "Backburner",
     "artist": "NIKI",
-    "file": "songs/NIKI - Backburner.wav",
-    "cover": "images/Backburner2.jpeg"
+    "album": "Nicole",
+    "genre": "R&B",
+    "durationSeconds": 283,
+    "file": "NIKI - Backburner.wav",
+    "cover": "Backburner2.jpeg"
+  },
+  {
+    "id": 7,
+    "title": "Merry Go Round of Life",
+    "artist": "Joe Hisaishi",
+    "album": "Howl’s Moving Castle Original Soundtrack",
+    "genre": "Classical",
+    "durationSeconds": 312,
+    "file": "Joe Hisaishi - Merry Go Round of Life.wav",
+    "cover": "MerryGoRoundCover.jpg"
+  },
+  {
+    "id": 8,
+    "title": "A Little Piece Of Heaven",
+    "artist": "Avenged Sevenfold",
+    "album": "Avenged Sevenfold (2007)",
+    "genre": "Metal",
+    "durationSeconds": 492,
+    "file": "Avenged Sevenfold - A Little Piece Of Heaven.wav",
+    "cover": "aLittlePeaceCover.jpg"
   }
 ]
