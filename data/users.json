@@ -1,0 +1,50 @@
+[
+  {
+    "userName": "ajijah1304",
+    "nickName": "ajizz",
+    "password": "12345ajiz",
+    "profileImagePath": "/images/fotoprofileUser/ajijah1304.png"
+  },
+  {
+    "userName": "bamgyuuu",
+    "nickName": "bamie",
+    "password": "bamie1234",
+    "profileImagePath": "/images/default_avatar.jpg"
+  },
+  {
+    "userName": "hackerRank",
+    "nickName": "progrm",
+    "password": "12345678",
+    "profileImagePath": "/images/fotoprofileUser/hackerRank.jpg"
+  },
+  {
+    "userName": "crowsyl",
+    "nickName": "sulis",
+    "password": "12345678",
+    "profileImagePath": "/images/fotoprofileUser/crowsyl.jpg"
+  },
+  {
+    "userName": "Soyaaas",
+    "nickName": "indir",
+    "password": "12345678",
+    "profileImagePath": "/images/fotoprofileUser/Soyaaas.png"
+  },
+  {
+    "userName": "bjirmaneh",
+    "nickName": "anjaygurinjay",
+    "password": "12345678",
+    "profileImagePath": "/images/default_avatar.jpg"
+  },
+  {
+    "userName": "AJIJAH304",
+    "nickName": "4ever",
+    "password": "12345678",
+    "profileImagePath": "/images/default_avatar.jpg"
+  },
+  {
+    "userName": "dewi",
+    "nickName": "@coulde",
+    "password": "12345678",
+    "profileImagePath": "/images/default_avatar.jpg"
+  }
+]
