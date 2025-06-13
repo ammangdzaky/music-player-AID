@@ -48,6 +48,13 @@
     "profileImagePath": "/images/default_avatar.jpg"
   },
   {
+    "userName": "zahra",
+    "nickName": "araaa",
+    "password": "112233",
+    "profileImagePath": "/images/default_avatar.jpg",
+    "playlists": []
+  },
+  {
     "userName": "a",
     "nickName": "a",
     "password": "a",
