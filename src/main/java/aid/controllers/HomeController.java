@@ -25,7 +25,7 @@ import java.util.ArrayList;
 public class HomeController {
     private HomeView view;
     private DataManager dataManager;
-    private MediaPlayer mediaPlayer; // Mengubah ini menjadi non-static
+    private MediaPlayer mediaPlayer; 
     private Song currentPlayingSong;
 
     private boolean isShuffleOn = false;
@@ -101,6 +101,15 @@ public class HomeController {
             filterSongs(newValue);
         });
 
+        // Menambahkan event handler untuk Home Button
+        view.getHomeButton().setOnAction(event -> {
+            System.out.println("DEBUG: Home button clicked. Displaying all songs.");
+            view.displaySongs(dataManager.getSongs());
+            // Opsional: hapus seleksi genre jika ada
+            view.getGenreListView().getSelectionModel().clearSelection();
+        });
+
+
         view.getGenreListView().setOnMouseClicked(event -> {
             String selectedGenre = view.getGenreListView().getSelectionModel().getSelectedItem();
             if (selectedGenre != null) {
@@ -126,6 +135,7 @@ public class HomeController {
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.dispose();
+            mediaPlayer = null; // Penting: Pastikan diset null setelah dispose
         }
         try {
             String resourcePathInClasspath = "/songs/" + song.getFile();
@@ -150,11 +160,15 @@ public class HomeController {
 
             mediaPlayer.setOnReady(() -> {
                 System.out.println("DEBUG: Media siap untuk diputar: " + song.getTitle());
-                view.updateTotalTimeLabel(formatDuration((int)mediaPlayer.getMedia().getDuration().toSeconds()));
+                if (mediaPlayer != null && mediaPlayer.getMedia() != null && mediaPlayer.getMedia().getDuration() != Duration.UNKNOWN) { // Pastikan null check
+                    view.updateTotalTimeLabel(formatDuration((int)mediaPlayer.getMedia().getDuration().toSeconds()));
+                } else {
+                    view.updateTotalTimeLabel("0:00"); // Fallback
+                }
             });
 
             mediaPlayer.currentTimeProperty().addListener((observable, oldValue, newValue) -> {
-                if (mediaPlayer != null && mediaPlayer.getMedia().getDuration() != Duration.UNKNOWN) { // Pastikan mediaPlayer tidak null
+                if (mediaPlayer != null && mediaPlayer.getMedia() != null && mediaPlayer.getMedia().getDuration() != Duration.UNKNOWN) { // Pastikan mediaPlayer dan media tidak null
                     double progress = newValue.toMillis() / mediaPlayer.getMedia().getDuration().toMillis();
                     view.updateProgressBar(progress);
                     view.updateCurrentTimeLabel(formatDuration((int)newValue.toSeconds()));
@@ -164,9 +178,11 @@ public class HomeController {
             mediaPlayer.setOnEndOfMedia(() -> {
                 System.out.println("DEBUG: Lagu selesai: " + song.getTitle());
                 if (isRepeatOn) {
-                    mediaPlayer.seek(Duration.ZERO);
-                    mediaPlayer.play();
-                    System.out.println("DEBUG: Lagu '" + currentPlayingSong.getTitle() + "' diulang.");
+                    if (mediaPlayer != null) { // Pastikan mediaPlayer tidak null sebelum seek/play
+                        mediaPlayer.seek(Duration.ZERO);
+                        mediaPlayer.play();
+                        System.out.println("DEBUG: Lagu '" + currentPlayingSong.getTitle() + "' diulang.");
+                    }
                 } else {
                     playNextSong();
                 }
@@ -186,6 +202,7 @@ public class HomeController {
     public void playSong(Song song) {
         if (song != null) {
             System.out.println("DEBUG: playSong dipanggil untuk: " + song.getTitle());
+            // Logika untuk lagu yang sama dan toggle play/pause
             if (mediaPlayer != null && currentPlayingSong != null && currentPlayingSong.getId() == song.getId() && mediaPlayer.getStatus() != MediaPlayer.Status.STOPPED) {
                 System.out.println("DEBUG: Lagu yang sama, toggle Play/Pause.");
                 togglePlayPause();
@@ -193,8 +210,8 @@ public class HomeController {
                 System.out.println("DEBUG: Lagu baru, inisialisasi dan putar.");
                 currentPlayingSong = song;
                 view.updateCurrentSongInfo(currentPlayingSong);
-                initializeMediaPlayer(song);
-                if (mediaPlayer != null) { // Tambahkan pengecekan null di sini
+                initializeMediaPlayer(song); // Inisialisasi MediaPlayer baru
+                if (mediaPlayer != null) { // Pastikan mediaPlayer tidak null setelah inisialisasi
                     mediaPlayer.play();
                 }
             }
@@ -235,7 +252,7 @@ public class HomeController {
             playSong(nextSong);
             view.getSongListView().getSelectionModel().select(nextSong);
         } else {
-            System.out.println("DEBUG: Lagu saat ini tidak ditemukan di daftar, memutar from awal atau shuffle.");
+            System.out.println("DEBUG: Lagu saat ini tidak ditemukan di daftar, memutar dari awal atau shuffle.");
             if (!currentSongsList.isEmpty()) {
                 playSong(currentSongsList.get(0));
                 view.getSongListView().getSelectionModel().select(currentSongsList.get(0));
@@ -344,4 +361,3 @@ public class HomeController {
         return String.format("%d:%02d", minutes, seconds);
     }
 }
-

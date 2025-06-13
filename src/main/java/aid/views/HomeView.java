@@ -71,6 +71,9 @@ public class HomeView {
     private Button speed175xButton;
     private Button speed2xButton;
 
+    // Tombol Home (Dideklarasikan di sini)
+    private Button homeButton;
+
 
     // Callback untuk controller (akan diatur oleh HomeController)
     private SeekCallback seekCallback;
@@ -167,8 +170,12 @@ public class HomeView {
 
         HBox leftNavIcons = new HBox(10);
         leftNavIcons.setAlignment(Pos.CENTER_LEFT);
+        
+        // Inisialisasi homeButton di sini
+        homeButton = createIconButton("🏠", FONT_SIZE_XLARGE, TEXT_LIGHT); 
+        
         leftNavIcons.getChildren().addAll(
-            createIconButton("🏠", FONT_SIZE_XLARGE, TEXT_LIGHT),
+            homeButton, // Menambahkan homeButton
             createIconButton("👤", FONT_SIZE_XLARGE, TEXT_LIGHT)
         );
         leftNavIcons.getChildren().forEach(node -> {
@@ -182,7 +189,7 @@ public class HomeView {
 
         ImageView appLogoImageView = null;
         try {
-            appLogoImageView = new ImageView(new Image(getClass().getResourceAsStream("/images/logo.jpg")));
+            appLogoImageView = new ImageView(new Image(getClass().getResourceAsStream("/images/Logo2.jpg")));
             appLogoImageView.setFitWidth(200);
             appLogoImageView.setFitHeight(60);
             appLogoImageView.setPreserveRatio(true);
@@ -300,8 +307,6 @@ public class HomeView {
 
         songListView = new ListView<>();
         songListView.getStyleClass().add("song-list");
-        VBox.setVgrow(songListView, Priority.ALWAYS); // Memastikan ListView mengisi sisa ruang vertikal di dalam card
-
         songListView.setCellFactory(param -> new javafx.scene.control.ListCell<Song>() {
             private final HBox cellLayout = new HBox(10);
             private final ImageView songAlbumArt = new ImageView();
@@ -594,6 +599,9 @@ public class HomeView {
     public Button getSpeed15xButton() { return speed15xButton; }
     public Button getSpeed175xButton() { return speed175xButton; }
     public Button getSpeed2xButton() { return speed2xButton; }
+
+    // Menambahkan getter untuk Home Button
+    public Button getHomeButton() { return homeButton; }
 
 
     public void displaySongs(List<Song> songs) {
